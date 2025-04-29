@@ -16,6 +16,7 @@ import {
   LogOut,
   Building2
 } from 'lucide-react';
+import { authService } from '../../services/authService';
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,6 +30,11 @@ const Sidebar = () => {
 
   const toggleMobileSidebar = () => {
     setIsMobileOpen(!isMobileOpen);
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
   };
 
   const menuItems = [
@@ -169,6 +175,7 @@ const Sidebar = () => {
                   animate={{ opacity: isCollapsed ? 0 : 1 }}
                   transition={{ duration: 0.2 }}
                   className="ml-auto p-1.5 rounded-md hover:bg-gray-800/50 text-gray-400"
+                  onClick={handleLogout}
                 >
                   <LogOut size={18} />
                 </motion.button>

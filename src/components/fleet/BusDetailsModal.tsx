@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Bus, MapPin, Users, Calendar, Clock, Wrench, AlertCircle } from 'lucide-react';
-import { Bus as BusType } from '../../services/busService';
+import { X, Bus, MapPin, Users, Calendar, Clock, Wrench, AlertCircle, Phone, Mail, User, Settings } from 'lucide-react';
+import { Bus as BusType, busService, BusDetailsResponse } from '../../services/busService';
+import ShimmerEffect from '../common/ShimmerEffect';
 
 interface BusDetailsModalProps {
   bus: BusType;
@@ -10,7 +11,38 @@ interface BusDetailsModalProps {
   isLoading: boolean;
 }
 
-const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatusChange, isLoading }) => {
+const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatusChange }) => {
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [busDetails, setBusDetails] = useState<BusDetailsResponse['data'] | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBusDetails = async () => {
+      try {
+        setIsLoadingDetails(true);
+        setError(null);
+        const response = await busService.fetchBusDetails(bus._id);
+        setBusDetails(response.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch bus details');
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    };
+
+    fetchBusDetails();
+  }, [bus._id]);
+
+  const handleAction = async (action: 'activate' | 'block' | 'maintenance' | 'backFromMaintenance' | 'delete') => {
+    setLoadingAction(action);
+    try {
+      await onStatusChange(action);
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -59,7 +91,8 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
         exit={{ scale: 0.95, opacity: 0 }}
         className="relative bg-dark-blue rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
       >
-        <div className="flex justify-between items-center mb-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary-900/60 rounded-md">
               <Bus size={24} className="text-primary-400" />
@@ -80,104 +113,202 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Basic Information</h3>
-            <div className="space-y-3">
-              <div className="flex items-center text-sm">
-                <span className="text-gray-400 w-32">Plate Number:</span>
-                <span className="text-white">{bus.plateNumber}</span>
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 text-red-400 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        {isLoadingDetails ? (
+          <div className="space-y-8">
+            {/* Basic Information Shimmer */}
+            <div className="glass-card p-4 rounded-lg">
+              <ShimmerEffect className="h-6 w-48 mb-4" />
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <ShimmerEffect className="h-4 w-32" />
+                    <ShimmerEffect className="h-4 w-48" />
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center text-sm">
-                <span className="text-gray-400 w-32">Type:</span>
-                <span className="text-white capitalize">{bus.type}</span>
+            </div>
+
+            {/* Location Information Shimmer */}
+            <div className="glass-card p-4 rounded-lg">
+              <ShimmerEffect className="h-6 w-48 mb-4" />
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <ShimmerEffect className="h-4 w-32" />
+                    <ShimmerEffect className="h-4 w-48" />
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center text-sm">
-                <span className="text-gray-400 w-32">Capacity:</span>
-                <span className="text-white">{bus.capacity} passengers</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <span className="text-gray-400 w-32">Driver:</span>
-                <span className="text-white">{bus.driver || 'Not assigned'}</span>
+            </div>
+
+            {/* Driver Information Shimmer */}
+            <div className="glass-card p-4 rounded-lg">
+              <ShimmerEffect className="h-6 w-48 mb-4" />
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <ShimmerEffect className="h-4 w-32" />
+                    <ShimmerEffect className="h-4 w-48" />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-
-          {/* Location Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Location Information</h3>
-            <div className="space-y-3">
-              {bus.currentLocation?.latitude && bus.currentLocation?.longitude ? (
+        ) : (
+          <div className="space-y-8">
+            {/* Basic Information */}
+            <div className="glass-card p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <Users size={18} className="mr-2 text-primary-400" />
+                Basic Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center text-sm">
-                  <MapPin size={16} className="text-gray-400 mr-2" />
-                  <span className="text-white">
-                    {bus.currentLocation.latitude.toFixed(2)}, {bus.currentLocation.longitude.toFixed(2)}
+                  <span className="text-gray-400 w-32">Plate Number:</span>
+                  <span className="text-white font-medium">{busDetails?.plateNumber}</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <span className="text-gray-400 w-32">Type:</span>
+                  <span className="text-white font-medium capitalize">{busDetails?.type}</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <span className="text-gray-400 w-32">Capacity:</span>
+                  <span className="text-white font-medium">{busDetails?.capacity} passengers</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <span className="text-gray-400 w-32">Status:</span>
+                  <span className={`font-medium ${getStatusColor(busDetails?.status || '')}`}>
+                    {getStatusText(busDetails?.status || '')}
                   </span>
                 </div>
-              ) : (
-                <div className="text-sm text-gray-400">No location data available</div>
-              )}
-              <div className="flex items-center text-sm">
-                <Clock size={16} className="text-gray-400 mr-2" />
-                <span className="text-gray-400">
-                  Last updated: {new Date(bus.currentLocation?.timestamp || bus.updatedAt).toLocaleString()}
-                </span>
               </div>
             </div>
+
+            {/* Location Information */}
+            <div className="glass-card p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <MapPin size={18} className="mr-2 text-primary-400" />
+                Location Information
+              </h3>
+              <div className="space-y-3">
+                {busDetails?.location?.latitude && busDetails?.location?.longitude ? (
+                  <div className="flex items-center text-sm">
+                    <MapPin size={16} className="text-gray-400 mr-2" />
+                    <span className="text-white">
+                      {busDetails.location.latitude.toFixed(2)}, {busDetails.location.longitude.toFixed(2)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400">No location data available</div>
+                )}
+                <div className="flex items-center text-sm">
+                  <Clock size={16} className="text-gray-400 mr-2" />
+                  <span className="text-gray-400">
+                    Last updated: {new Date(busDetails?.location?.timestamp || bus.updatedAt).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Driver Information */}
+            <div className="glass-card p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <User size={18} className="mr-2 text-primary-400" />
+                Driver Information
+              </h3>
+              {busDetails?.driver ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center text-sm">
+                    <User size={16} className="text-gray-400 mr-2" />
+                    <span className="text-gray-400 w-24">Name:</span>
+                    <span className="text-white font-medium">{busDetails.driver.name}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Mail size={16} className="text-gray-400 mr-2" />
+                    <span className="text-gray-400 w-24">Email:</span>
+                    <span className="text-white font-medium">{busDetails.driver.email}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <Phone size={16} className="text-gray-400 mr-2" />
+                    <span className="text-gray-400 w-24">Phone:</span>
+                    <span className="text-white font-medium">{busDetails.driver.phone}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <span className="text-gray-400 w-24">Status:</span>
+                    <span className={`font-medium ${busDetails.driver.status === 'active' ? 'text-success-500' : 'text-error-500'}`}>
+                      {busDetails.driver.status}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-400 flex items-center">
+                  <AlertCircle size={16} className="mr-2" />
+                  No driver assigned
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Status Management */}
         <div className="mt-8 pt-6 border-t border-gray-700">
-          <h3 className="text-lg font-semibold text-white mb-4">Status Management</h3>
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <Settings size={18} className="mr-2 text-primary-400" />
+            Status Management
+          </h3>
           <div className="flex flex-wrap gap-3">
             {bus.status === 'blocked' && (
               <button
-                onClick={() => onStatusChange('activate')}
-                className={`px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isLoading}
+                onClick={() => handleAction('activate')}
+                className={`px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors ${loadingAction === 'activate' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loadingAction === 'activate'}
               >
-                {isLoading ? <span>Loading...</span> : 'Unblock Bus'}
+                {loadingAction === 'activate' ? 'Loading...' : 'Unblock Bus'}
               </button>
             )}
 
             {(bus.status === 'active' || bus.status === 'inactive' || bus.status === 'maintenance') && (
               <button
-                onClick={() => onStatusChange('block')}
-                className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isLoading}
+                onClick={() => handleAction('block')}
+                className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'block' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loadingAction === 'block'}
               >
-                {isLoading ? <span>Loading...</span> : 'Block Bus'}
+                {loadingAction === 'block' ? 'Loading...' : 'Block Bus'}
               </button>
             )}
 
             {bus.status === 'active' && (
               <button
-                onClick={() => onStatusChange('maintenance')}
-                className={`px-4 py-2 bg-warning-600 text-white rounded-lg hover:bg-warning-700 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isLoading}
+                onClick={() => handleAction('maintenance')}
+                className={`px-4 py-2 bg-warning-600 text-white rounded-lg hover:bg-warning-700 transition-colors ${loadingAction === 'maintenance' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loadingAction === 'maintenance'}
               >
-                {isLoading ? <span>Loading...</span> : 'Send to Maintenance'}
+                {loadingAction === 'maintenance' ? 'Loading...' : 'Send to Maintenance'}
               </button>
             )}
 
             {bus.status === 'maintenance' && (
               <button
-                onClick={() => onStatusChange('backFromMaintenance')}
-                className={`px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isLoading}
+                onClick={() => handleAction('backFromMaintenance')}
+                className={`px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors ${loadingAction === 'backFromMaintenance' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loadingAction === 'backFromMaintenance'}
               >
-                {isLoading ? <span>Loading...</span> : 'Return from Maintenance'}
+                {loadingAction === 'backFromMaintenance' ? 'Loading...' : 'Return from Maintenance'}
               </button>
             )}
 
             <button
-              onClick={() => onStatusChange('delete')}
-              className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isLoading}
+              onClick={() => handleAction('delete')}
+              className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${loadingAction === 'delete' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loadingAction === 'delete'}
             >
-              {isLoading ? <span>Loading...</span> : 'Delete Bus'}
+              {loadingAction === 'delete' ? 'Loading...' : 'Delete Bus'}
             </button>
           </div>
         </div>

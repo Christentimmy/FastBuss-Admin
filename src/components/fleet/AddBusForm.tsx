@@ -21,6 +21,16 @@ const AddBusForm: React.FC<AddBusFormProps> = ({ onSubmit, onCancel, isLoading }
     onSubmit(formData);
   };
 
+  const handleCancel = () => {
+    setFormData({
+      name: '',
+      plateNumber: '',
+      capacity: '',
+      type: ''
+    });
+    onCancel();
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
@@ -91,7 +101,7 @@ const AddBusForm: React.FC<AddBusFormProps> = ({ onSubmit, onCancel, isLoading }
       <div className="flex justify-end gap-4 mt-6">
         <button
           type="button"
-          onClick={onCancel}
+          onClick={handleCancel}
           className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
           disabled={isLoading}
         >

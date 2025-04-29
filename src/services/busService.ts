@@ -30,6 +30,31 @@ export interface Bus {
   updatedAt: string;
 }
 
+export interface BusDetailsResponse {
+  message: string;
+  data: {
+    _id: string;
+    name: string;
+    plateNumber: string;
+    capacity: number;
+    type: string;
+    status: string;
+    location: {
+      latitude?: number;
+      longitude?: number;
+      address?: string;
+      timestamp: string;
+    };
+    driver: {
+      _id: string;
+      name: string;
+      email: string;
+      phone: string;
+      status: string;
+    } | null;
+  };
+}
+
 export const busService = {
   createBus: async (busData: CreateBusData) => {
     try {
@@ -42,11 +67,13 @@ export const busService = {
         body: JSON.stringify(busData)
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to create bus');
+        throw new Error(data.message || 'Failed to create bus');
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
       console.error('Error creating bus:', error);
       throw error;
@@ -68,6 +95,25 @@ export const busService = {
       return await response.json();
     } catch (error) {
       console.error('Error fetching buses:', error);
+      throw error;
+    }
+  },
+
+  fetchNoDriverBuses: async (): Promise<BusResponse> => {
+    try {
+      const response = await fetch(`${BASE_URL}/sub-company/staff/no-driver-buses`, {
+        headers: {
+          'Authorization': `Bearer ${TOKEN}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch buses without drivers');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching buses without drivers:', error);
       throw error;
     }
   },
@@ -142,6 +188,25 @@ export const busService = {
 
     if (!response.ok) {
       throw new Error('Failed to delete bus');
+    }
+  },
+
+  fetchBusDetails: async (busId: string): Promise<BusDetailsResponse> => {
+    try {
+      const response = await fetch(`${BASE_URL}/sub-company/staff/bus-details/${busId}`, {
+        headers: {
+          'Authorization': `Bearer ${TOKEN}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch bus details');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching bus details:', error);
+      throw error;
     }
   }
 }; 

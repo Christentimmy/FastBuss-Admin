@@ -233,7 +233,10 @@ const FleetManagement = () => {
           >
             <div 
               className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => {
+                setIsAddModalOpen(false);
+                setError(null);
+              }}
             />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -244,7 +247,10 @@ const FleetManagement = () => {
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-white">Add New Bus</h2>
                 <button
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setError(null);
+                  }}
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   <X size={20} />
@@ -257,7 +263,10 @@ const FleetManagement = () => {
               )}
               <AddBusForm 
                 onSubmit={handleAddBus} 
-                onCancel={() => setIsAddModalOpen(false)}
+                onCancel={() => {
+                  setIsAddModalOpen(false);
+                  setError(null);
+                }}
                 isLoading={isLoading}
               />
             </motion.div>
