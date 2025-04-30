@@ -243,7 +243,6 @@ export const driverService = {
         body: JSON.stringify(data),
       });
 
-      console.log(response.status);
 
       if (!response.ok) {
         // Try to extract error message from response body

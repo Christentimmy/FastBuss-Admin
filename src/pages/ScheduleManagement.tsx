@@ -1,34 +1,69 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CalendarClock, 
   Bus, 
-  Route, 
   Users, 
   Clock, 
-  MapPin, 
   Search, 
-  Filter, 
-  ChevronRight,
+  Filter,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Timer,
+  Map,
+  User
 } from 'lucide-react';
-import { schedules, routes, buses, drivers } from '../data/mockData';
+import { tripHistoryService, TripHistory } from '../services/tripHistoryService';
+import { authService } from '../services/authService';
 
 const ScheduleManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [expandedSchedule, setExpandedSchedule] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'timeline' | 'grid'>('timeline');
+  const [selectedSchedule, setSelectedSchedule] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [schedules, setSchedules] = useState<TripHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch schedules on component mount
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        setLoading(true);
+        const token = authService.getToken();
+        const response = await tripHistoryService.getTripHistory(token!);
+        setSchedules(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load schedules. Please try again later.');
+        console.error('Error loading schedules:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedules();
+  }, []);
+
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Calculate schedule statistics
   const totalSchedules = schedules.length;
   const inProgressSchedules = schedules.filter(s => s.status === 'in-progress').length;
-  const upcomingSchedules = schedules.filter(s => s.status === 'scheduled').length;
+  const upcomingSchedules = schedules.filter(s => s.status === 'pending').length;
   const completedSchedules = schedules.filter(s => s.status === 'completed').length;
 
   const filteredSchedules = schedules.filter(schedule => {
     const matchesSearch = 
-      schedule.busNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      schedule.busName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       schedule.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       schedule.routeName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || schedule.status === statusFilter;
@@ -39,12 +74,14 @@ const ScheduleManagement = () => {
     switch (status) {
       case 'in-progress':
         return 'bg-primary-900/60 text-primary-400';
-      case 'scheduled':
+      case 'pending':
         return 'bg-success-900/60 text-success-400';
       case 'completed':
         return 'bg-gray-900/60 text-gray-400';
-      default:
+      case 'cancelled':
         return 'bg-warning-900/60 text-warning-400';
+      default:
+        return 'bg-gray-900/60 text-gray-400';
     }
   };
 
@@ -56,6 +93,37 @@ const ScheduleManagement = () => {
     });
   };
 
+  const getTimeDifference = (dateString: string) => {
+    const scheduleTime = new Date(dateString);
+    const diff = scheduleTime.getTime() - currentTime.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (diff < 0) return 'In Progress';
+    if (hours > 0) return `In ${hours}h ${remainingMinutes}m`;
+    return `In ${minutes}m`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-warning-500 mx-auto mb-4" />
+          <p className="text-warning-500 text-lg">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -66,13 +134,35 @@ const ScheduleManagement = () => {
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Schedule Management</h1>
         <div className="flex items-center gap-4">
-          <button className="btn-primary flex items-center gap-2">
-            <CalendarClock size={16} />
-            New Schedule
-          </button>
+          <h1 className="text-2xl font-bold text-white">Schedule Management</h1>
+          <div className="flex items-center gap-2">
+            <button
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'timeline'
+                  ? 'bg-primary-900 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+              onClick={() => setActiveView('timeline')}
+            >
+              Timeline View
+            </button>
+            <button
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'grid'
+                  ? 'bg-primary-900 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+              onClick={() => setActiveView('grid')}
+            >
+              Grid View
+            </button>
+          </div>
         </div>
+        <button className="btn-primary flex items-center gap-2">
+          <Plus size={16} />
+          New Schedule
+        </button>
       </div>
 
       {/* Statistics Cards */}
@@ -147,7 +237,7 @@ const ScheduleManagement = () => {
       </div>
 
       {/* Filters and Search */}
-      <motion.div 
+      <motion.div
         className="glass-card p-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -173,101 +263,165 @@ const ScheduleManagement = () => {
             >
               <option value="all">All Status</option>
               <option value="in-progress">In Progress</option>
-              <option value="scheduled">Scheduled</option>
+              <option value="pending">Pending</option>
               <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
         </div>
       </motion.div>
 
-      {/* Schedules List */}
-      <motion.div 
-        className="space-y-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.6 }}
-      >
-        {filteredSchedules.map((schedule) => (
+      {/* Timeline View */}
+      <AnimatePresence mode="wait">
+        {activeView === 'timeline' ? (
           <motion.div
-            key={schedule.id}
-            className="glass-card overflow-hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            key="timeline"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
+            className="space-y-4"
           >
-            <div 
-              className="p-4 cursor-pointer"
-              onClick={() => setExpandedSchedule(expandedSchedule === schedule.id ? null : schedule.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            {filteredSchedules.map((schedule, index) => (
+              <motion.div
+                key={schedule._id}
+                className="glass-card overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <div 
+                  className="p-4 cursor-pointer"
+                  onClick={() => setSelectedSchedule(selectedSchedule === schedule._id ? null : schedule._id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-primary-900/60 rounded-md">
+                        <Bus size={20} className="text-primary-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{schedule.busName}</h3>
+                        <p className="text-sm text-gray-400">{schedule.routeName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(schedule.status)}`}>
+                        {schedule.status.replace('-', ' ').charAt(0).toUpperCase() + schedule.status.slice(1)}
+                      </span>
+                      <ChevronDown 
+                        size={20} 
+                        className={`text-gray-400 transition-transform duration-200 ${
+                          selectedSchedule === schedule._id ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {selectedSchedule === schedule._id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="border-t border-gray-800"
+                    >
+                      <div className="p-4 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-gray-400">
+                              <Timer size={16} />
+                              <span>Schedule Time</span>
+                            </div>
+                            <p className="text-white">
+                              {formatTime(schedule.departureTime)} - {formatTime(schedule.arrivalTime)}
+                            </p>
+                            <p className="text-sm text-primary-400">
+                              {getTimeDifference(schedule.departureTime)}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-gray-400">
+                              <User size={16} />
+                              <span>Driver</span>
+                            </div>
+                            <p className="text-white">{schedule.driverName}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-warning-400">
+                          <AlertCircle size={16} />
+                          <span className="text-sm">Route: {schedule.origin} → {schedule.destination}</span>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                          <button className="btn-secondary text-sm">View Details</button>
+                          <button className="btn-primary text-sm">Edit Schedule</button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            {filteredSchedules.map((schedule, index) => (
+              <motion.div
+                key={schedule._id}
+                className="glass-card p-4"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-primary-900/60 rounded-md">
                     <Bus size={20} className="text-primary-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">{schedule.busNumber}</h3>
+                    <h3 className="text-lg font-semibold text-white">{schedule.busName}</h3>
                     <p className="text-sm text-gray-400">{schedule.routeName}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Timer size={16} />
+                    <span className="text-sm">{formatTime(schedule.departureTime)} - {formatTime(schedule.arrivalTime)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <User size={16} />
+                    <span className="text-sm">{schedule.driverName}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Map size={16} />
+                    <span className="text-sm">{schedule.origin} → {schedule.destination}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(schedule.status)}`}>
                     {schedule.status.replace('-', ' ').charAt(0).toUpperCase() + schedule.status.slice(1)}
                   </span>
-                  <ChevronDown 
-                    size={20} 
-                    className={`text-gray-400 transition-transform duration-200 ${
-                      expandedSchedule === schedule.id ? 'rotate-180' : ''
-                    }`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <AnimatePresence>
-              {expandedSchedule === schedule.id && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="border-t border-gray-800"
-                >
-                  <div className="p-4 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <Clock size={16} />
-                          <span>Schedule Time</span>
-                        </div>
-                        <p className="text-white">
-                          {formatTime(schedule.departureTime)} - {formatTime(schedule.arrivalTime)}
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <Users size={16} />
-                          <span>Driver</span>
-                        </div>
-                        <p className="text-white">{schedule.driverName}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-warning-400">
-                      <AlertCircle size={16} />
-                      <span className="text-sm">Estimated duration: {schedule.arrivalTime}</span>
-                    </div>
-
-                    <div className="flex justify-end gap-2">
-                      <button className="btn-secondary text-sm">View Details</button>
-                      <button className="btn-primary text-sm">Edit Schedule</button>
-                    </div>
+                  <div className="flex gap-2">
+                    <button className="btn-secondary text-xs">View</button>
+                    <button className="btn-primary text-xs">Edit</button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
-        ))}
-      </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
