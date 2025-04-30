@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Plus, X, Settings, Bus as BusIcon } from 'lucide-react';
 import { Bus } from '../services/busService';
@@ -33,8 +33,9 @@ const FleetManagement = () => {
   }, []);
 
   const filteredBuses = buses.filter((bus: Bus) => {
-    const matchesSearch = bus.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         bus.plateNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!bus) return false;
+    const matchesSearch = (bus.busName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                         (bus.busNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || bus.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -59,7 +60,7 @@ const FleetManagement = () => {
     setSelectedBus(bus);
   };
 
-  const handleStatusChange = async (action: 'activate' | 'block' | 'maintenance' | 'backFromMaintenance' | 'delete') => {
+  const handleStatusChange = async (action: 'activate' | 'block' | 'delete') => {
     if (!selectedBus) return;
 
     try {
@@ -73,12 +74,6 @@ const FleetManagement = () => {
           break;
         case 'block':
           updatedBus = await busService.deactivateBus(selectedBus._id);
-          break;
-        case 'maintenance':
-          updatedBus = await busService.busMaintenance(selectedBus._id);
-          break;
-        case 'backFromMaintenance':
-          updatedBus = await busService.busBackFromMaintenance(selectedBus._id);
           break;
         case 'delete':
           await busService.deleteBus(selectedBus._id);
@@ -147,7 +142,6 @@ const FleetManagement = () => {
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
-              <option value="maintenance">In Maintenance</option>
               <option value="inactive">Inactive</option>
             </select>
             
@@ -157,23 +151,15 @@ const FleetManagement = () => {
             >
               {isLoading ? <span>Loading...</span> : <Filter size={20} />}
             </button>
-            
-            <button 
-              className={`p-2 rounded-lg bg-gray-800/50 border border-gray-700 text-gray-400 hover:text-white transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isLoading}
-            >
-              {isLoading ? <span>Loading...</span> : <Settings size={20} />}
-            </button>
           </div>
         </div>
       </div>
 
       {/* Fleet Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {[
           { label: 'Total Buses', value: buses.length, color: 'primary' },
           { label: 'Active', value: buses.filter((b: Bus) => b.status === 'active').length, color: 'success' },
-          { label: 'In Maintenance', value: buses.filter((b: Bus) => b.status === 'maintenance').length, color: 'warning' },
           { label: 'Inactive', value: buses.filter((b: Bus) => b.status === 'inactive').length, color: 'error' },
         ].map((stat, index) => (
           <motion.div

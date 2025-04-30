@@ -8,7 +8,6 @@ import FleetManagement from './pages/FleetManagement';
 import DriversManagement from './pages/DriversManagement';
 import RoutesManagement from './pages/RoutesManagement';
 import ScheduleManagement from './pages/ScheduleManagement';
-import MaintenanceManagement from './pages/MaintenanceManagement';
 import Analytics from './pages/Analytics';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
@@ -78,11 +77,6 @@ const App = () => {
           <Route path="/schedule" element={
             <AuthenticatedLayout>
               <ScheduleManagement />
-            </AuthenticatedLayout>
-          } />
-          <Route path="/maintenance" element={
-            <AuthenticatedLayout>
-              <MaintenanceManagement />
             </AuthenticatedLayout>
           } />
           <Route path="/analytics" element={

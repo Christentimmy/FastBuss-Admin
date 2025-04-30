@@ -1,18 +1,13 @@
 export interface Bus {
-  id: string;
-  number: string;
-  status: 'active' | 'maintenance' | 'inactive';
-  driver: string;
-  route: string;
-  currentLocation: {
-    lat: number;
-    lng: number;
-  };
+  _id: string;
+  busName: string;
+  busNumber: string;
+  busType: string;
   capacity: number;
-  currentPassengers: number;
-  lastMaintenance: string;
-  nextMaintenance: string;
-  fuelLevel: number;
+  status: 'active' | 'inactive';
+  subCompanyId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Driver {
@@ -59,17 +54,6 @@ export interface Notification {
   type: 'info' | 'warning' | 'error' | 'success';
   timestamp: string;
   read: boolean;
-}
-
-export interface MaintenanceRecord {
-  id: string;
-  busId: string;
-  busNumber: string;
-  type: 'routine' | 'repair' | 'inspection';
-  status: 'scheduled' | 'in-progress' | 'completed';
-  date: string;
-  description: string;
-  cost: number;
 }
 
 export interface AnalyticsData {

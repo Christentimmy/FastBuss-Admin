@@ -26,6 +26,8 @@ import { authService } from '../services/authService';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/datepicker.css";
+import TripDetailsModal from '../components/schedule/TripDetailsModal';
+import EditTripModal from '../components/schedule/EditTripModal';
 
 const ScheduleManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +51,13 @@ const ScheduleManagement = () => {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [isFormLoading, setIsFormLoading] = useState(false);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [editingTrip, setEditingTrip] = useState<{
+    id: string;
+    departureTime: string;
+    arrivalTime: string;
+    driverId: string;
+  } | null>(null);
 
   // Fetch schedules on component mount
   useEffect(() => {
@@ -206,6 +215,29 @@ const ScheduleManagement = () => {
     if (diff < 0) return 'In Progress';
     if (hours > 0) return `In ${hours}h ${remainingMinutes}m`;
     return `In ${minutes}m`;
+  };
+
+  const handleViewClick = (tripId: string) => {
+    setSelectedTripId(tripId);
+  };
+
+  const handleEditClick = (trip: TripHistory) => {
+    setEditingTrip({
+      id: trip._id,
+      departureTime: trip.departureTime,
+      arrivalTime: trip.arrivalTime,
+      driverId: trip.driverId
+    });
+  };
+
+  const handleTripUpdate = async () => {
+    try {
+      const token = await authService.getToken();
+      const response = await tripHistoryService.getTripHistory(token);
+      setSchedules(response.data);
+    } catch (err) {
+      console.error('Error refreshing trips:', err);
+    }
   };
 
   if (loading) {
@@ -589,7 +621,15 @@ const ScheduleManagement = () => {
 
                         <div className="flex justify-end gap-2">
                           <button className="btn-secondary text-sm">View Details</button>
-                          <button className="btn-primary text-sm">Edit Schedule</button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(schedule);
+                            }}
+                            className="btn-primary text-sm"
+                          >
+                            Edit
+                          </button>
                         </div>
                       </div>
                     </motion.div>
@@ -645,13 +685,50 @@ const ScheduleManagement = () => {
                     {schedule.status.replace('-', ' ').charAt(0).toUpperCase() + schedule.status.slice(1)}
                   </span>
                   <div className="flex gap-2">
-                    <button className="btn-secondary text-xs">View</button>
-                    <button className="btn-primary text-xs">Edit</button>
+                    <button 
+                      onClick={() => handleViewClick(schedule._id)}
+                      className="btn-secondary text-xs"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(schedule);
+                      }}
+                      className="btn-primary text-xs"
+                    >
+                      Edit
+                    </button>
                   </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Trip Details Modal */}
+      <AnimatePresence>
+        {selectedTripId && (
+          <TripDetailsModal
+            tripId={selectedTripId}
+            onClose={() => setSelectedTripId(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Edit Trip Modal */}
+      <AnimatePresence>
+        {editingTrip && (
+          <EditTripModal
+            tripId={editingTrip.id}
+            initialDepartureTime={editingTrip.departureTime}
+            initialArrivalTime={editingTrip.arrivalTime}
+            initialDriverId={editingTrip.driverId}
+            onClose={() => setEditingTrip(null)}
+            onUpdate={handleTripUpdate}
+          />
         )}
       </AnimatePresence>
     </motion.div>

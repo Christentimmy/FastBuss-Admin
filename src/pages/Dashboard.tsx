@@ -1,11 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bus, Users, Route as RouteIcon, Wrench, Fuel, AlertCircle } from 'lucide-react';
+import { Bus, Users, Route as RouteIcon, Fuel, AlertCircle } from 'lucide-react';
 import { 
   buses, 
   drivers,
   routes,
-  maintenanceRecords,
   analyticsData
 } from '../data/mockData';
 
@@ -13,7 +12,6 @@ import {
 import StatCard from '../components/dashboard/StatCard';
 import BusStatusCard from '../components/dashboard/BusStatusCard';
 import ActiveBusMap from '../components/dashboard/ActiveBusMap';
-import MaintenanceSchedule from '../components/dashboard/MaintenanceSchedule';
 import AnalyticsChart from '../components/dashboard/AnalyticsChart';
 import DriverList from '../components/dashboard/DriverList';
 
@@ -22,9 +20,6 @@ const Dashboard = () => {
   const activeBuses = buses.filter(bus => bus.status === 'active').length;
   const activeDrivers = drivers.filter(driver => driver.status === 'on-duty').length;
   const activeRoutes = routes.filter(route => route.status === 'active').length;
-  const maintenanceCount = maintenanceRecords.filter(
-    record => record.status === 'in-progress' || record.status === 'scheduled'
-  ).length;
   
   // Calculate total passengers currently being served
   const totalCurrentPassengers = buses.reduce((sum, bus) => sum + bus.currentPassengers, 0);
@@ -55,7 +50,7 @@ const Dashboard = () => {
       </div>
       
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <StatCard
           title="Active Buses"
           value={activeBuses}
@@ -84,16 +79,6 @@ const Dashboard = () => {
           iconColor="text-accent-400"
           iconBgColor="bg-accent-900/60"
           metric={`of ${routes.length}`}
-        />
-        
-        <StatCard
-          title="Maintenance"
-          value={maintenanceCount}
-          change={{ value: 1, isPositive: false }}
-          icon={Wrench}
-          iconColor="text-warning-400"
-          iconBgColor="bg-warning-900/60"
-          metric="tasks"
         />
       </div>
       
@@ -147,8 +132,6 @@ const Dashboard = () => {
                 ))
               }
             </div>
-            
-            <MaintenanceSchedule records={maintenanceRecords} />
           </div>
         </div>
       </div>
@@ -166,8 +149,7 @@ const Dashboard = () => {
         <div>
           <h4 className="text-sm font-medium text-white">System Alert</h4>
           <p className="text-xs text-gray-400 mt-1">
-            Bus FB-1003 maintenance is scheduled to be completed today. 
-            Please confirm availability with the maintenance team for tomorrow's routes.
+            Bus FB-1003 is running low on fuel. Please schedule refueling.
           </p>
         </div>
         <button className="btn-secondary text-xs ml-auto whitespace-nowrap">

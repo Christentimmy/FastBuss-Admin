@@ -1,5 +1,41 @@
 import { Bus, Driver, Route, ScheduleItem, Notification, MaintenanceRecord, AnalyticsData } from '../types';
 
+export const mockBuses = [
+  {
+    _id: '1',
+    busName: 'Bus 1',
+    busNumber: 'ABC123',
+    busType: 'Standard',
+    capacity: 50,
+    status: 'active',
+    subCompanyId: '1',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  },
+  {
+    _id: '2',
+    busName: 'Bus 2',
+    busNumber: 'DEF456',
+    busType: 'Premium',
+    capacity: 40,
+    status: 'active',
+    subCompanyId: '1',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  },
+  {
+    _id: '3',
+    busName: 'Bus 3',
+    busNumber: 'GHI789',
+    busType: 'Standard',
+    capacity: 45,
+    status: 'inactive',
+    subCompanyId: '1',
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  }
+];
+
 export const buses: Bus[] = [
   {
     id: '1',

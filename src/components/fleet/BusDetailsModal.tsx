@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Bus, MapPin, Users, Calendar, Clock, Wrench, AlertCircle, Phone, Mail, User, Settings } from 'lucide-react';
+import { X, Bus, MapPin, Users, Calendar, Clock, Phone, Mail, User, Settings } from 'lucide-react';
 import { Bus as BusType, busService, BusDetailsResponse } from '../../services/busService';
 import ShimmerEffect from '../common/ShimmerEffect';
 
 interface BusDetailsModalProps {
   bus: BusType;
   onClose: () => void;
-  onStatusChange: (action: 'activate' | 'block' | 'maintenance' | 'backFromMaintenance' | 'delete') => void;
+  onStatusChange: (action: 'activate' | 'block' | 'delete') => void;
   isLoading: boolean;
 }
 
@@ -34,7 +34,7 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
     fetchBusDetails();
   }, [bus._id]);
 
-  const handleAction = async (action: 'activate' | 'block' | 'maintenance' | 'backFromMaintenance' | 'delete') => {
+  const handleAction = async (action: 'activate' | 'block' | 'delete') => {
     setLoadingAction(action);
     try {
       await onStatusChange(action);
@@ -47,8 +47,6 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
     switch (status) {
       case 'active':
         return 'text-success-500';
-      case 'maintenance':
-        return 'text-warning-500';
       case 'blocked':
         return 'text-error-500';
       case 'inactive':
@@ -62,8 +60,6 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
     switch (status) {
       case 'active':
         return 'In Service';
-      case 'maintenance':
-        return 'In Maintenance';
       case 'blocked':
         return 'Blocked';
       case 'inactive':
@@ -98,7 +94,7 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
               <Bus size={24} className="text-primary-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">{bus.name}</h2>
+              <h2 className="text-xl font-bold text-white">{bus.busName}</h2>
               <div className="flex items-center">
                 <span className={`w-2 h-2 rounded-full mr-1.5 ${getStatusColor(bus.status)}`}></span>
                 <span className="text-sm text-gray-400">{getStatusText(bus.status)}</span>
@@ -170,7 +166,7 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center text-sm">
-                  <span className="text-gray-400 w-32">Plate Number:</span>
+                  <span className="text-gray-400 w-32">Bus Number:</span>
                   <span className="text-white font-medium">{busDetails?.plateNumber}</span>
                 </div>
                 <div className="flex items-center text-sm">
@@ -199,119 +195,93 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
               <div className="space-y-3">
                 {busDetails?.location?.latitude && busDetails?.location?.longitude ? (
                   <div className="flex items-center text-sm">
-                    <MapPin size={16} className="text-gray-400 mr-2" />
-                    <span className="text-white">
-                      {busDetails.location.latitude.toFixed(2)}, {busDetails.location.longitude.toFixed(2)}
+                    <span className="text-gray-400 w-32">Current Location:</span>
+                    <span className="text-white font-medium">
+                      {busDetails.location.address || `${busDetails.location.latitude}, ${busDetails.location.longitude}`}
                     </span>
                   </div>
                 ) : (
                   <div className="text-sm text-gray-400">No location data available</div>
                 )}
                 <div className="flex items-center text-sm">
-                  <Clock size={16} className="text-gray-400 mr-2" />
-                  <span className="text-gray-400">
-                    Last updated: {new Date(busDetails?.location?.timestamp || bus.updatedAt).toLocaleString()}
+                  <span className="text-gray-400 w-32">Last Updated:</span>
+                  <span className="text-white font-medium">
+                    {busDetails?.location?.timestamp ? new Date(busDetails.location.timestamp).toLocaleString() : 'N/A'}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Driver Information */}
-            <div className="glass-card p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <User size={18} className="mr-2 text-primary-400" />
-                Driver Information
-              </h3>
-              {busDetails?.driver ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {busDetails?.driver && (
+              <div className="glass-card p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <User size={18} className="mr-2 text-primary-400" />
+                  Driver Information
+                </h3>
+                <div className="space-y-3">
                   <div className="flex items-center text-sm">
-                    <User size={16} className="text-gray-400 mr-2" />
-                    <span className="text-gray-400 w-24">Name:</span>
+                    <span className="text-gray-400 w-32">Name:</span>
                     <span className="text-white font-medium">{busDetails.driver.name}</span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <Mail size={16} className="text-gray-400 mr-2" />
-                    <span className="text-gray-400 w-24">Email:</span>
+                    <span className="text-gray-400 w-32">Email:</span>
                     <span className="text-white font-medium">{busDetails.driver.email}</span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <Phone size={16} className="text-gray-400 mr-2" />
-                    <span className="text-gray-400 w-24">Phone:</span>
+                    <span className="text-gray-400 w-32">Phone:</span>
                     <span className="text-white font-medium">{busDetails.driver.phone}</span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <span className="text-gray-400 w-24">Status:</span>
-                    <span className={`font-medium ${busDetails.driver.status === 'active' ? 'text-success-500' : 'text-error-500'}`}>
-                      {busDetails.driver.status}
+                    <span className="text-gray-400 w-32">Status:</span>
+                    <span className={`font-medium ${
+                      busDetails.driver.status === 'active' ? 'text-success-500' : 'text-gray-500'
+                    }`}>
+                      {busDetails.driver.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </div>
                 </div>
-              ) : (
-                <div className="text-sm text-gray-400 flex items-center">
-                  <AlertCircle size={16} className="mr-2" />
-                  No driver assigned
-                </div>
-              )}
+              </div>
+            )}
+
+            {/* Status Management */}
+            <div className="mt-8 pt-6 border-t border-gray-700">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                <Settings size={18} className="mr-2 text-primary-400" />
+                Status Management
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {bus.status === 'blocked' && (
+                  <button
+                    onClick={() => handleAction('activate')}
+                    className={`px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors ${loadingAction === 'activate' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={loadingAction === 'activate'}
+                  >
+                    {loadingAction === 'activate' ? 'Loading...' : 'Activate Bus'}
+                  </button>
+                )}
+
+                {bus.status !== 'blocked' && (
+                  <button
+                    onClick={() => handleAction('block')}
+                    className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'block' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={loadingAction === 'block'}
+                  >
+                    {loadingAction === 'block' ? 'Loading...' : 'Block Bus'}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => handleAction('delete')}
+                  className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'delete' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loadingAction === 'delete'}
+                >
+                  {loadingAction === 'delete' ? 'Loading...' : 'Delete Bus'}
+                </button>
+              </div>
             </div>
           </div>
         )}
-
-        {/* Status Management */}
-        <div className="mt-8 pt-6 border-t border-gray-700">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Settings size={18} className="mr-2 text-primary-400" />
-            Status Management
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            {bus.status === 'blocked' && (
-              <button
-                onClick={() => handleAction('activate')}
-                className={`px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors ${loadingAction === 'activate' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loadingAction === 'activate'}
-              >
-                {loadingAction === 'activate' ? 'Loading...' : 'Activate Bus'}
-              </button>
-            )}
-
-            {bus.status !== 'blocked' && (
-              <button
-                onClick={() => handleAction('block')}
-                className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'block' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loadingAction === 'block'}
-              >
-                {loadingAction === 'block' ? 'Loading...' : 'Block Bus'}
-              </button>
-            )}
-
-            {bus.status !== 'blocked' && bus.status !== 'maintenance' && (
-              <button
-                onClick={() => handleAction('maintenance')}
-                className={`px-4 py-2 bg-warning-600 text-white rounded-lg hover:bg-warning-700 transition-colors ${loadingAction === 'maintenance' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loadingAction === 'maintenance'}
-              >
-                {loadingAction === 'maintenance' ? 'Loading...' : 'Send to Maintenance'}
-              </button>
-            )}
-
-            {bus.status === 'maintenance' && (
-              <button
-                onClick={() => handleAction('backFromMaintenance')}
-                className={`px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors ${loadingAction === 'backFromMaintenance' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loadingAction === 'backFromMaintenance'}
-              >
-                {loadingAction === 'backFromMaintenance' ? 'Loading...' : 'Return from Maintenance'}
-              </button>
-            )}
-
-            <button
-              onClick={() => handleAction('delete')}
-              className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ${loadingAction === 'delete' ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={loadingAction === 'delete'}
-            >
-              {loadingAction === 'delete' ? 'Loading...' : 'Delete Bus'}
-            </button>
-          </div>
-        </div>
       </motion.div>
     </motion.div>
   );
