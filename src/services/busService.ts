@@ -122,7 +122,8 @@ export const busService = {
     const response = await fetch(`${BASE_URL}/sub-company/deactivate-bus/${busId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${TOKEN}`
+        'Authorization': `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json'
       }
     });
 

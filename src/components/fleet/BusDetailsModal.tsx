@@ -269,11 +269,11 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
                 className={`px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors ${loadingAction === 'activate' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={loadingAction === 'activate'}
               >
-                {loadingAction === 'activate' ? 'Loading...' : 'Unblock Bus'}
+                {loadingAction === 'activate' ? 'Loading...' : 'Activate Bus'}
               </button>
             )}
 
-            {(bus.status === 'active' || bus.status === 'inactive' || bus.status === 'maintenance') && (
+            {bus.status !== 'blocked' && (
               <button
                 onClick={() => handleAction('block')}
                 className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'block' ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -283,7 +283,7 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
               </button>
             )}
 
-            {bus.status === 'active' && (
+            {bus.status !== 'blocked' && bus.status !== 'maintenance' && (
               <button
                 onClick={() => handleAction('maintenance')}
                 className={`px-4 py-2 bg-warning-600 text-white rounded-lg hover:bg-warning-700 transition-colors ${loadingAction === 'maintenance' ? 'opacity-50 cursor-not-allowed' : ''}`}

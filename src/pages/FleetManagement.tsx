@@ -90,11 +90,9 @@ const FleetManagement = () => {
           throw new Error('Invalid action');
       }
 
-      // Update the bus in the list
-      setBuses(buses.map(bus => 
-        bus._id === updatedBus._id ? updatedBus : bus
-      ));
-      
+      // Update the bus in the list and refresh the bus list
+      const response = await busService.fetchBuses();
+      setBuses(response.data);
       setSelectedBus(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update bus status');
