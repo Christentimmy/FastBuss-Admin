@@ -22,6 +22,22 @@ export interface DriversResponse {
   data: Driver[];
 }
 
+export interface TripHistory {
+  _id: string;
+  busName: string;
+  busPlateNumber: string;
+  distance: number;
+  price: number;
+  routeName: string;
+  origin: string;
+  destination: string;
+}
+
+export interface TripHistoryResponse {
+  message: string;
+  data: TripHistory[];
+}
+
 export const driverService = {
   getDrivers: async (): Promise<DriversResponse> => {
     const token = authService.getToken();
@@ -38,8 +54,11 @@ export const driverService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -79,8 +98,11 @@ export const driverService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -111,8 +133,11 @@ export const driverService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -143,8 +168,11 @@ export const driverService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -176,8 +204,11 @@ export const driverService = {
         body: JSON.stringify({ driverId, busId }),
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -209,8 +240,11 @@ export const driverService = {
         body: JSON.stringify({ driverId }),
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -228,7 +262,6 @@ export const driverService = {
 
   createDriver: async (data: { name: string; email: string; phone: string; password: string }): Promise<void> => {
     const token = authService.getToken();
-    // console.log(token);
     if (!token) {
       throw new Error('No authentication token found');
     }
@@ -243,9 +276,11 @@ export const driverService = {
         body: JSON.stringify(data),
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       if (!response.ok) {
-        // Try to extract error message from response body
         const errorData = await response.json().catch(() => null);
         if (errorData && errorData.message) {
           throw new Error(errorData.message);
@@ -259,6 +294,43 @@ export const driverService = {
       }
       throw error;
     }
-  }
+  },
+
+  getTripHistory: async (driverId: string): Promise<TripHistoryResponse> => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-history-by-driver/${driverId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        if (errorData && errorData.message) {
+          throw new Error(errorData.message);
+        } else {
+          throw new Error('Failed to fetch trip history');
+        }
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error fetching trip history: ${error.message}`);
+      }
+      throw error;
+    }
+  },
 };
 

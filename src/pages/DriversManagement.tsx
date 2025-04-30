@@ -12,11 +12,12 @@ import {
   XCircle,
   Bus
 } from 'lucide-react';
-import { driverService, Driver } from '../services/driverService';
+import { driverService, Driver, TripHistory } from '../services/driverService';
 import DriverMenu from '../components/drivers/DriverMenu';
 import LoadingOverlay from '../components/common/LoadingOverlay';
 import AddDriverDialog from '../components/drivers/AddDriverDialog';
 import AssignBusDialog from '../components/drivers/AssignBusDialog';
+import TripHistoryDialog from '../components/drivers/TripHistoryDialog';
 
 const DriversManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,6 +32,10 @@ const DriversManagement = () => {
   const [isAssignBusDialogOpen, setIsAssignBusDialogOpen] = useState(false);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [driverCreationError, setDriverCreationError] = useState<string | null>(null);
+  const [isTripHistoryDialogOpen, setIsTripHistoryDialogOpen] = useState(false);
+  const [selectedDriverForHistory, setSelectedDriverForHistory] = useState<Driver | null>(null);
+  const [tripHistory, setTripHistory] = useState<TripHistory[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   useEffect(() => {
     const fetchDrivers = async () => {
@@ -154,8 +159,22 @@ const DriversManagement = () => {
   };
 
   const handleViewHistory = async (driverId: string) => {
-    // TODO: Implement view history functionality
-    console.log('View driver history:', driverId);
+    setIsLoadingHistory(true);
+    try {
+      const driver = drivers.find(d => d._id === driverId);
+      if (!driver) {
+        throw new Error('Driver not found');
+      }
+      
+      const response = await driverService.getTripHistory(driverId);
+      setTripHistory(response.data);
+      setSelectedDriverForHistory(driver);
+      setIsTripHistoryDialogOpen(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch trip history');
+    } finally {
+      setIsLoadingHistory(false);
+    }
   };
 
   const handleCreateDriver = async (data: { name: string; email: string; phone: string; password: string }) => {
@@ -231,7 +250,7 @@ const DriversManagement = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <LoadingOverlay isLoading={isProcessing} />
+      <LoadingOverlay isLoading={isProcessing || isLoadingHistory} />
       <AddDriverDialog
         isOpen={isAddDialogOpen}
         onClose={() => {
@@ -250,6 +269,16 @@ const DriversManagement = () => {
         }}
         onAssign={handleBusAssignment}
         driverId={selectedDriverId || ''}
+      />
+      <TripHistoryDialog
+        isOpen={isTripHistoryDialogOpen}
+        onClose={() => {
+          setIsTripHistoryDialogOpen(false);
+          setSelectedDriverForHistory(null);
+          setTripHistory([]);
+        }}
+        tripHistory={tripHistory}
+        driverName={selectedDriverForHistory?.name || ''}
       />
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
         <div>

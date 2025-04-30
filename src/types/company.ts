@@ -1,19 +1,24 @@
 export interface Company {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  status: 'active' | 'blocked';
+  _id: string;
+  companyName: string;
+  logo: string;
+  contactEmail: string;
+  contactPhone: string;
+  description: string;
+  createdBy: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  parentCompanyId?: string; // For sub-companies
+  __v: number;
+  staffCount: number;
+  busCount: number;
+  driverCount: number;
 }
 
 export interface CompanyFormData {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  parentCompanyId?: string;
+  companyName?: string;
+  logo?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  description?: string;
 } 

@@ -60,6 +60,11 @@ export const routeService = {
           'Content-Type': 'application/json',
         }
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch routes');
       }
@@ -81,6 +86,10 @@ export const routeService = {
         },
         body: JSON.stringify(data),
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       const responseData = await response.json();
       
@@ -106,6 +115,10 @@ export const routeService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to deactivate route');
@@ -126,6 +139,10 @@ export const routeService = {
           'Content-Type': 'application/json',
         },
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -148,6 +165,10 @@ export const routeService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to activate route');
@@ -169,6 +190,10 @@ export const routeService = {
         },
         body: JSON.stringify(data),
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       const responseData = await response.json();
       

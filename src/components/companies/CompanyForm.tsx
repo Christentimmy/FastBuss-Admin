@@ -9,11 +9,11 @@ interface CompanyFormProps {
 
 const CompanyForm: React.FC<CompanyFormProps> = ({ initialData, onSubmit, onCancel }) => {
   const [formData, setFormData] = React.useState<CompanyFormData>({
-    name: initialData?.name || '',
-    email: initialData?.email || '',
-    phone: initialData?.phone || '',
-    address: initialData?.address || '',
-    parentCompanyId: initialData?.parentCompanyId,
+    companyName: initialData?.companyName || '',
+    logo: initialData?.logo || '',
+    contactEmail: initialData?.contactEmail || '',
+    contactPhone: initialData?.contactPhone || '',
+    description: initialData?.description || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,63 +31,62 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ initialData, onSubmit, onCanc
           <input
             type="text"
             className="w-full px-4 py-2 bg-dark rounded-lg text-white"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={formData.companyName}
+            onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
             required
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-2">
-            Email
+            Logo URL
+          </label>
+          <input
+            type="url"
+            className="w-full px-4 py-2 bg-dark rounded-lg text-white"
+            value={formData.logo}
+            onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-2">
+            Contact Email
           </label>
           <input
             type="email"
             className="w-full px-4 py-2 bg-dark rounded-lg text-white"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            value={formData.contactEmail}
+            onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
             required
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-2">
-            Phone
+            Contact Phone
           </label>
           <input
             type="tel"
             className="w-full px-4 py-2 bg-dark rounded-lg text-white"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            value={formData.contactPhone}
+            onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
             required
           />
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-400 mb-2">
-            Address
+            Description
           </label>
-          <input
-            type="text"
+          <textarea
             className="w-full px-4 py-2 bg-dark rounded-lg text-white"
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             required
+            rows={4}
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
-            Parent Company (Optional)
-          </label>
-          <select
-            className="w-full px-4 py-2 bg-dark rounded-lg text-white"
-            value={formData.parentCompanyId || ''}
-            onChange={(e) => setFormData({ ...formData, parentCompanyId: e.target.value || undefined })}
-          >
-            <option value="">None</option>
-            {/* Parent companies will be populated here */}
-          </select>
         </div>
       </div>
 

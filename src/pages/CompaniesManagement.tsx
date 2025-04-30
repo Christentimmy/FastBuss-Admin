@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Company } from '../types/company';
 import { motion } from 'framer-motion';
 import CompanyForm from '../components/companies/CompanyForm';
+import { companyService } from '../services/companyService';
+import { 
+  MoreVertical, 
+  Edit2, 
+  Trash2, 
+  Eye, 
+  CheckCircle2, 
+  XCircle,
+  Search,
+  Filter,
+  Loader2
+} from 'lucide-react';
 
 const CompaniesManagement: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -12,6 +24,11 @@ const CompaniesManagement: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedMenuCompany, setSelectedMenuCompany] = useState<string | null>(null);
+  const [processingDeleteId, setProcessingDeleteId] = useState<string | null>(null);
+  const [processingSuspendId, setProcessingSuspendId] = useState<string | null>(null);
+  const [processingActivateId, setProcessingActivateId] = useState<string | null>(null);
+  const [processingViewDetailsId, setProcessingViewDetailsId] = useState<string | null>(null);
 
   // Fetch companies on component mount
   useEffect(() => {
@@ -20,10 +37,8 @@ const CompaniesManagement: React.FC = () => {
 
   const fetchCompanies = async () => {
     try {
-      // TODO: Implement API call
-      // const response = await fetch('/api/super-admin/companies');
-      // const data = await response.json();
-      // setCompanies(data);
+      const data = await companyService.listCompanies();
+      setCompanies(data);
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching companies:', error);
@@ -31,35 +46,28 @@ const CompaniesManagement: React.FC = () => {
     }
   };
 
-  const handleAddCompany = async (formData: any) => {
+  const handleAddCompany = async (formData: FormData) => {
     try {
-      // TODO: Implement API call
-      // const response = await fetch('/api/super-admin/company', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-      // const newCompany = await response.json();
-      // setCompanies([...companies, newCompany]);
+      setIsLoading(true);
+      const newCompany = await companyService.createCompany(formData);
+      // Fetch the updated list of companies
+      const updatedCompanies = await companyService.listCompanies();
+      setCompanies(updatedCompanies);
       setIsAddModalOpen(false);
     } catch (error) {
       console.error('Error adding company:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleEditCompany = async (formData: any) => {
     if (!selectedCompany) return;
     try {
-      // TODO: Implement API call
-      // const response = await fetch(`/api/super-admin/company/${selectedCompany.id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
-      // const updatedCompany = await response.json();
-      // setCompanies(companies.map(company => 
-      //   company.id === updatedCompany.id ? updatedCompany : company
-      // ));
+      const updatedCompany = await companyService.updateCompany(selectedCompany._id, formData);
+      setCompanies(companies.map(company => 
+        company._id === updatedCompany._id ? updatedCompany : company
+      ));
       setIsEditModalOpen(false);
     } catch (error) {
       console.error('Error updating company:', error);
@@ -68,60 +76,68 @@ const CompaniesManagement: React.FC = () => {
 
   const handleDeleteCompany = async (companyId: string) => {
     try {
-      // TODO: Implement API call
-      // await fetch(`/api/super-admin/company/${companyId}`, {
-      //   method: 'DELETE',
-      // });
-      // setCompanies(companies.filter(company => company.id !== companyId));
+      setProcessingDeleteId(companyId);
+      await companyService.deleteCompany(companyId);
+      setCompanies(companies.filter(company => company._id !== companyId));
     } catch (error) {
       console.error('Error deleting company:', error);
+    } finally {
+      setProcessingDeleteId(null);
+      setSelectedMenuCompany(null);
     }
   };
 
   const handleSuspendCompany = async (companyId: string) => {
     try {
-      // TODO: Implement API call
-      // await fetch(`/api/super-admin/company/${companyId}/suspend`, {
-      //   method: 'PUT',
-      // });
-      // setCompanies(companies.map(company => 
-      //   company.id === companyId ? { ...company, status: 'blocked' } : company
-      // ));
+      setProcessingSuspendId(companyId);
+      const response = await companyService.suspendCompany(companyId);
+      setCompanies(companies.map(company => 
+        company._id === companyId ? { ...company, isActive: false } : company
+      ));
     } catch (error) {
       console.error('Error suspending company:', error);
+    } finally {
+      setProcessingSuspendId(null);
+      setSelectedMenuCompany(null);
     }
   };
 
   const handleActivateCompany = async (companyId: string) => {
     try {
-      // TODO: Implement API call
-      // await fetch(`/api/super-admin/company/${companyId}/activate`, {
-      //   method: 'PUT',
-      // });
-      // setCompanies(companies.map(company => 
-      //   company.id === companyId ? { ...company, status: 'active' } : company
-      // ));
+      setProcessingActivateId(companyId);
+      const response = await companyService.activateCompany(companyId);
+      setCompanies(companies.map(company => 
+        company._id === companyId ? { ...company, isActive: true } : company
+      ));
     } catch (error) {
       console.error('Error activating company:', error);
+    } finally {
+      setProcessingActivateId(null);
+      setSelectedMenuCompany(null);
     }
   };
 
   const handleViewDetails = async (companyId: string) => {
     try {
-      // TODO: Implement API call
-      // const response = await fetch(`/api/super-admin/company/${companyId}`);
-      // const companyDetails = await response.json();
-      // setSelectedCompany(companyDetails);
+      setProcessingViewDetailsId(companyId);
+      const companyDetails = await companyService.getCompany(companyId);
+      setSelectedCompany(companyDetails);
       setIsDetailsModalOpen(true);
     } catch (error) {
       console.error('Error fetching company details:', error);
+    } finally {
+      setProcessingViewDetailsId(null);
+      setSelectedMenuCompany(null);
     }
   };
 
   const filteredCompanies = companies.filter(company => {
-    const matchesSearch = company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         company.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || company.status === statusFilter;
+    if (!company) return false;
+    const matchesSearch = (company.companyName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (company.contactEmail?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && company.isActive) || 
+                         (statusFilter === 'blocked' && !company.isActive);
     return matchesSearch && matchesStatus;
   });
 
@@ -136,23 +152,28 @@ const CompaniesManagement: React.FC = () => {
         <h1 className="text-2xl font-bold text-white">Companies Management</h1>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
-          Add New Company
+          <span>Add New Company</span>
         </button>
       </div>
 
-      <div className="bg-dark-blue rounded-lg p-6 space-y-4">
-        <div className="flex gap-4">
+      <div className="bg-dark-blue rounded-lg p-6 space-y-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Search companies..."
-            className="flex-1 px-4 py-2 bg-dark rounded-lg text-white placeholder-gray-400"
+              className="w-full pl-10 pr-4 py-2 bg-dark rounded-lg text-white placeholder-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          </div>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <select
-            className="px-4 py-2 bg-dark rounded-lg text-white"
+              className="pl-10 pr-4 py-2 bg-dark rounded-lg text-white appearance-none"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'blocked')}
           >
@@ -160,76 +181,126 @@ const CompaniesManagement: React.FC = () => {
             <option value="active">Active</option>
             <option value="blocked">Blocked</option>
           </select>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-gray-400">
-                <th className="p-4">Company Name</th>
-                <th className="p-4">Email</th>
-                <th className="p-4">Phone</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCompanies.map((company) => (
-                <tr key={company.id} className="border-t border-gray-700">
-                  <td className="p-4 text-white">{company.name}</td>
-                  <td className="p-4 text-white">{company.email}</td>
-                  <td className="p-4 text-white">{company.phone}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      company.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                    }`}>
-                      {company.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
+            <motion.div
+              key={company._id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gray-800/50 rounded-lg p-4 space-y-4 relative"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={company.logo} 
+                    alt={company.companyName} 
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">{company.companyName}</h3>
+                    <p className="text-sm text-gray-400">{company.contactEmail}</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <button
+                    onClick={() => setSelectedMenuCompany(selectedMenuCompany === company._id ? null : company._id)}
+                    className="p-1 hover:bg-gray-700/50 rounded-lg transition-colors"
+                  >
+                    <MoreVertical size={20} className="text-gray-400" />
+                  </button>
+                  
+                  {selectedMenuCompany === company._id && (
+                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 z-10">
                       <button
-                        onClick={() => handleViewDetails(company.id)}
-                        className="px-3 py-1 rounded-lg text-sm bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                        onClick={() => {
+                          handleViewDetails(company._id);
+                          setSelectedMenuCompany(null);
+                        }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50"
+                        disabled={processingViewDetailsId === company._id}
                       >
-                        View
+                        {processingViewDetailsId === company._id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                        <span>View Details</span>
                       </button>
                       <button
                         onClick={() => {
                           setSelectedCompany(company);
                           setIsEditModalOpen(true);
+                          setSelectedMenuCompany(null);
                         }}
-                        className="px-3 py-1 rounded-lg text-sm bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50"
                       >
-                        Edit
+                        <Edit2 size={16} />
+                        <span>Edit</span>
                       </button>
-                      {company.status === 'active' ? (
+                      {company.isActive ? (
                         <button
-                          onClick={() => handleSuspendCompany(company.id)}
-                          className="px-3 py-1 rounded-lg text-sm bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                          onClick={() => handleSuspendCompany(company._id)}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50"
+                          disabled={processingSuspendId === company._id}
                         >
-                          Suspend
+                          {processingSuspendId === company._id ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <XCircle size={16} />
+                          )}
+                          <span>Suspend</span>
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleActivateCompany(company.id)}
-                          className="px-3 py-1 rounded-lg text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                          onClick={() => handleActivateCompany(company._id)}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-400 hover:bg-gray-700/50"
+                          disabled={processingActivateId === company._id}
                         >
-                          Activate
+                          {processingActivateId === company._id ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <CheckCircle2 size={16} />
+                          )}
+                          <span>Activate</span>
                         </button>
                       )}
                       <button
-                        onClick={() => handleDeleteCompany(company.id)}
-                        className="px-3 py-1 rounded-lg text-sm bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                        onClick={() => handleDeleteCompany(company._id)}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50"
+                        disabled={processingDeleteId === company._id}
                       >
-                        Delete
+                        {processingDeleteId === company._id ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={16} />
+                        )}
+                        <span>Delete</span>
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-sm text-gray-400 line-clamp-2">{company.description}</p>
+
+              <div className="flex items-center justify-between pt-2 border-t border-gray-700/50">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    company.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {company.isActive ? 'Active' : 'Blocked'}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(company.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-400">{company.contactPhone}</span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
 
@@ -238,10 +309,101 @@ const CompaniesManagement: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-dark-blue rounded-lg p-6 w-full max-w-2xl">
             <h2 className="text-xl font-bold text-white mb-4">Add New Company</h2>
-            <CompanyForm
-              onSubmit={handleAddCompany}
-              onCancel={() => setIsAddModalOpen(false)}
-            />
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              handleAddCompany(formData);
+            }} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Company Name</label>
+                  <input
+                    type="text"
+                    name="companyName"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Contact Email</label>
+                  <input
+                    type="email"
+                    name="contactEmail"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Contact Phone</label>
+                  <input
+                    type="tel"
+                    name="contactPhone"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Admin Name</label>
+                  <input
+                    type="text"
+                    name="adminName"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Admin Password</label>
+                  <input
+                    type="password"
+                    name="adminPassword"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Company Logo</label>
+                  <input
+                    type="file"
+                    name="logo"
+                    accept="image/*"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                <textarea
+                  name="description"
+                  required
+                  rows={3}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="animate-spin" size={16} />
+                      <span>Creating...</span>
+                    </div>
+                  ) : (
+                    'Create Company'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -260,12 +422,16 @@ const CompaniesManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Company Details Modal */}
+      {/* Details Modal */}
       {isDetailsModalOpen && selectedCompany && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-dark-blue rounded-lg p-6 w-full max-w-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl"
+          >
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-xl font-bold text-white">Company Details</h2>
+              <h2 className="text-2xl font-bold text-white">Company Details</h2>
               <button
                 onClick={() => setIsDetailsModalOpen(false)}
                 className="text-gray-400 hover:text-white"
@@ -273,37 +439,55 @@ const CompaniesManagement: React.FC = () => {
                 ✕
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-400">Company Name</p>
-                <p className="text-white">{selectedCompany.name}</p>
+            
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={selectedCompany.logo} 
+                  alt={selectedCompany.companyName} 
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="text-xl font-semibold text-white">{selectedCompany.companyName}</h3>
+                  <p className="text-gray-400">{selectedCompany.contactEmail}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-gray-400">Email</p>
-                <p className="text-white">{selectedCompany.email}</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-gray-400">Contact Phone</p>
+                  <p className="text-white">{selectedCompany.contactPhone}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-400">Status</p>
+                  <p className={`${selectedCompany.isActive ? 'text-green-400' : 'text-red-400'}`}>
+                    {selectedCompany.isActive ? 'Active' : 'Suspended'}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-400">Staff Count</p>
+                  <p className="text-white">{selectedCompany.staffCount}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-400">Bus Count</p>
+                  <p className="text-white">{selectedCompany.busCount}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-400">Driver Count</p>
+                  <p className="text-white">{selectedCompany.driverCount}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-400">Created At</p>
+                  <p className="text-white">{new Date(selectedCompany.createdAt).toLocaleDateString()}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-gray-400">Phone</p>
-                <p className="text-white">{selectedCompany.phone}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Address</p>
-                <p className="text-white">{selectedCompany.address}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Status</p>
-                <p className={`${
-                  selectedCompany.status === 'active' ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {selectedCompany.status}
-                </p>
-              </div>
-              <div>
-                <p className="text-gray-400">Created At</p>
-                <p className="text-white">{new Date(selectedCompany.createdAt).toLocaleDateString()}</p>
+
+              <div className="space-y-2">
+                <p className="text-gray-400">Description</p>
+                <p className="text-white">{selectedCompany.description}</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </motion.div>

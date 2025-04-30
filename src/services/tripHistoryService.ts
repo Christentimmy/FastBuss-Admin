@@ -1,4 +1,5 @@
 import { BASE_URL } from './config';
+import { authService } from './authService';
 
 export interface TripHistory {
   _id: string;
@@ -69,6 +70,10 @@ export const tripHistoryService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch trip history');
       }
@@ -90,6 +95,10 @@ export const tripHistoryService = {
           'Content-Type': 'application/json',
         },
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to fetch routes');
@@ -113,6 +122,10 @@ export const tripHistoryService = {
         },
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch available drivers');
       }
@@ -135,6 +148,10 @@ export const tripHistoryService = {
         },
         body: JSON.stringify(scheduleData),
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to create schedule');

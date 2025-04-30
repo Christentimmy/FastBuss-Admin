@@ -50,7 +50,9 @@ const App = () => {
       <AnimatePresence mode="wait">
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<SplashScreen />} />
+          <Route path="/" element={
+            authService.isAuthenticated() ? <Navigate to="/dashboard" replace /> : <SplashScreen />
+          } />
           <Route path="/login" element={<Login />} />
 
           {/* Authenticated routes */}

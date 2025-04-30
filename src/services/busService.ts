@@ -1,4 +1,3 @@
-
 import { BASE_URL } from './config';
 import { authService } from './authService';
 const TOKEN = authService.getToken();
@@ -63,6 +62,10 @@ export const busService = {
         body: JSON.stringify(busData)
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -85,6 +88,10 @@ export const busService = {
         }
       });
 
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch buses');
       }
@@ -103,6 +110,10 @@ export const busService = {
           'Authorization': `Bearer ${TOKEN}`
         }
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to fetch buses without drivers');
@@ -124,6 +135,10 @@ export const busService = {
       }
     });
 
+    if (authService.handleTokenExpiration(response)) {
+      throw new Error('Token expired');
+    }
+
     if (!response.ok) {
       throw new Error('Failed to deactivate bus');
     }
@@ -138,6 +153,10 @@ export const busService = {
         'Authorization': `Bearer ${TOKEN}`
       }
     });
+
+    if (authService.handleTokenExpiration(response)) {
+      throw new Error('Token expired');
+    }
 
     if (!response.ok) {
       throw new Error('Failed to activate bus');
@@ -154,6 +173,10 @@ export const busService = {
       }
     });
 
+    if (authService.handleTokenExpiration(response)) {
+      throw new Error('Token expired');
+    }
+
     if (!response.ok) {
       throw new Error('Failed to delete bus');
     }
@@ -166,6 +189,10 @@ export const busService = {
           'Authorization': `Bearer ${TOKEN}`
         }
       });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to fetch bus details');

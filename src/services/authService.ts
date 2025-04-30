@@ -111,9 +111,24 @@ export const authService = {
         }
       });
 
+      if (response.status === 410) {
+        authService.removeToken();
+        window.location.href = '/login';
+        return false;
+      }
+
       return response.ok;
     } catch {
       return false;
     }
+  },
+
+  handleTokenExpiration: (response: Response) => {
+    if (response.status === 410) {
+      authService.removeToken();
+      window.location.href = '/login';
+      return true;
+    }
+    return false;
   }
 }; 

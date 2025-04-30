@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -36,6 +36,8 @@ const Sidebar = () => {
     navigate('/login');
   };
 
+  const userRole = authService.getTokenPayload()?.role;
+
   const menuItems = [
     { id: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { id: '/fleet', icon: <Bus size={20} />, label: 'Fleet Management' },
@@ -43,7 +45,7 @@ const Sidebar = () => {
     { id: '/routes', icon: <Route size={20} />, label: 'Routes' },
     { id: '/schedule', icon: <CalendarClock size={20} />, label: 'Schedule' },
     { id: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
-    { id: '/companies', icon: <Building2 size={20} />, label: 'Companies' },
+    ...(userRole === 'super_admin' ? [{ id: '/companies', icon: <Building2 size={20} />, label: 'Companies' }] : []),
     { id: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
     { id: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
