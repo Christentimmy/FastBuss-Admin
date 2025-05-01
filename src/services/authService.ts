@@ -18,6 +18,15 @@ export interface TokenPayload {
   exp: number;
 }
 
+interface UserProfile {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'inactive' | 'pending';
+  profilePicture: string | null;
+}
+
 export const authService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     try {
@@ -151,5 +160,26 @@ export const authService = {
     if (!response.ok) {
       throw new Error(data.message || 'Failed to change password');
     }
+  },
+
+  async getUserProfile(): Promise<UserProfile> {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await fetch(`${BASE_URL}/sub-company/staff/get-admin-details`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user profile');
+    }
+
+    const data = await response.json();
+    return data.data;
   }
 }; 

@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -13,15 +13,30 @@ import {
   X,
   LogOut,
   Building2,
-  UserCog
+  UserCog,
+  User,
+  Loader2
 } from 'lucide-react';
 import { authService } from '../../services/authService';
+import Avatar from '../common/Avatar';
+
+interface UserProfile {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'inactive' | 'pending';
+  profilePicture: string | null;
+}
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -31,9 +46,26 @@ const Sidebar = () => {
     setIsMobileOpen(!isMobileOpen);
   };
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const profile = await authService.getUserProfile();
+        setUserProfile(profile);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   const handleLogout = () => {
     authService.logout();
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const userRole = authService.getTokenPayload()?.role;
@@ -149,38 +181,35 @@ const Sidebar = () => {
           </nav>
           
           {/* User Profile */}
-          <div className="border-t border-gray-800/50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary-700 flex items-center justify-center overflow-hidden">
-                <img 
-                  src="https://images.pexels.com/photos/5792641/pexels-photo-5792641.jpeg?auto=compress&cs=tinysrgb&w=600" 
-                  alt="Admin Avatar"
-                  className="w-full h-full object-cover"
-                />
+          <div className="mt-auto p-4 border-t border-gray-800">
+            {isLoading ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="w-6 h-6 text-primary-400 animate-spin" />
               </div>
-              {!isCollapsed && (
-                <motion.div
-                  initial={false}
-                  animate={{ opacity: isCollapsed ? 0 : 1, width: isCollapsed ? 0 : 'auto' }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <p className="text-sm font-medium text-white">Alex Johnson</p>
-                  <p className="text-xs text-gray-400">Administrator</p>
-                </motion.div>
-              )}
-              {!isCollapsed && (
-                <motion.button
-                  initial={false}
-                  animate={{ opacity: isCollapsed ? 0 : 1 }}
-                  transition={{ duration: 0.2 }}
-                  className="ml-auto p-1.5 rounded-md hover:bg-gray-800/50 text-gray-400"
+            ) : error ? (
+              <div className="text-red-400 text-sm p-4">{error}</div>
+            ) : userProfile ? (
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar
+                    name={userProfile.name}
+                    status={userProfile.status as 'active' | 'inactive' | 'pending'}
+                    size="md"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold truncate">{userProfile.name}</h3>
+                  <p className="text-gray-400 text-sm truncate capitalize">{userProfile.role}</p>
+                </div>
+                <button
                   onClick={handleLogout}
+                  className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
+                  title="Logout"
                 >
-                  <LogOut size={18} />
-                </motion.button>
-              )}
-            </div>
+                  <LogOut size={16} className="text-gray-400" />
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </motion.aside>

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
 const SplashScreen = () => {
   const navigate = useNavigate();
-  const [isValidating, setIsValidating] = useState(true);
+  // const [isValidating, setIsValidating] = useState(true);
 
   useEffect(() => {
     const validateAndRedirect = async () => {

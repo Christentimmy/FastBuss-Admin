@@ -210,34 +210,38 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Map Section */}
           <div className="h-[500px] rounded-lg overflow-hidden relative">
-            <MapContainer
-              center={[0, 0]}
-              zoom={2}
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              {isLocationsValid && originLocation && destinationLocation && (
-                <>
-                  <Marker position={[originLocation.lat, originLocation.lon]}>
-                    <Popup>{originLocation.display_name}</Popup>
-                  </Marker>
-                  <Marker position={[destinationLocation.lat, destinationLocation.lon]}>
-                    <Popup>{destinationLocation.display_name}</Popup>
-                  </Marker>
-                  <Polyline
-                    positions={[
-                      [originLocation.lat, originLocation.lon],
-                      [destinationLocation.lat, destinationLocation.lon]
-                    ]}
-                    color="blue"
-                  />
-                </>
-              )}
-            </MapContainer>
-            {!isLocationsValid && (
+            {isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+              </div>
+            ) : isLocationsValid && originLocation && destinationLocation ? (
+              <MapContainer
+                center={[
+                  (originLocation.lat + destinationLocation.lat) / 2,
+                  (originLocation.lon + destinationLocation.lon) / 2
+                ]}
+                zoom={6}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <Marker position={[originLocation.lat, originLocation.lon]}>
+                  <Popup>{originLocation.display_name}</Popup>
+                </Marker>
+                <Marker position={[destinationLocation.lat, destinationLocation.lon]}>
+                  <Popup>{destinationLocation.display_name}</Popup>
+                </Marker>
+                <Polyline
+                  positions={[
+                    [originLocation.lat, originLocation.lon],
+                    [destinationLocation.lat, destinationLocation.lon]
+                  ]}
+                  color="blue"
+                />
+              </MapContainer>
+            ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                 <div className="text-center p-4 bg-gray-900 rounded-lg">
                   <AlertCircle className="w-12 h-12 text-warning-500 mx-auto mb-2" />

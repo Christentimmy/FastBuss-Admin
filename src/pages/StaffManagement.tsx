@@ -6,7 +6,6 @@ import {
   Filter, 
   Trash2,
   Loader2,
-  Edit2,
   MoreVertical,
   Mail,
   Shield,
@@ -18,8 +17,6 @@ import {
 import AddStaffModal from '../components/staff/AddStaffModal';
 import Avatar from '../components/common/Avatar';
 import { staffService } from '../services/staffService';
-import { authService } from '../services/authService';
-
 interface StaffMember {
   _id: string;
   name: string;
