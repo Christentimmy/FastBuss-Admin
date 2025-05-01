@@ -192,7 +192,7 @@ const StaffManagement: React.FC = () => {
         <div className="relative flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">
-              Staff Management
+          Staff Management
             </h1>
             <p className="text-gray-400 mt-2">Manage your staff members</p>
           </div>
@@ -201,7 +201,7 @@ const StaffManagement: React.FC = () => {
             onClick={handleAddStaff}
           >
             <UserPlus size={16} />
-            Add Staff Member
+          Add Staff Member
           </button>
         </div>
       </div>
@@ -213,7 +213,7 @@ const StaffManagement: React.FC = () => {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search staff members..."
+          placeholder="Search staff members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-900/50 border border-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -238,7 +238,7 @@ const StaffManagement: React.FC = () => {
       {/* Staff List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredStaff.map((staff) => (
-          <motion.div
+      <motion.div
             key={staff._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -253,7 +253,7 @@ const StaffManagement: React.FC = () => {
             {/* Staff Info */}
             <div className="flex items-start gap-4 mt-8">
               <div className="relative">
-                <Avatar
+                      <Avatar
                   name={staff.name}
                   status={staff.status}
                   size="lg"
@@ -346,7 +346,7 @@ const StaffManagement: React.FC = () => {
                 </div>
               )}
             </div>
-          </motion.div>
+              </motion.div>
         ))}
       </div>
 

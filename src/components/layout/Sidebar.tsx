@@ -208,7 +208,7 @@ const Sidebar = () => {
                 >
                   <LogOut size={16} className="text-gray-400" />
                 </button>
-              </div>
+            </div>
             ) : null}
           </div>
         </div>
