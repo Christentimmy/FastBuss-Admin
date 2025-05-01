@@ -1,51 +1,172 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Settings as SettingsIcon,
-  Bell,
-  Users,
-  Bus,
-  Route,
-  Calendar,
   Shield,
-  Database,
   Save,
-  ChevronDown,
-  ChevronUp,
-  ToggleLeft,
-  ToggleRight,
   Clock,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  Calendar
 } from 'lucide-react';
+import { companyProfileService } from '../services/companyProfileService';
+import { authService } from '../services/authService';
+
+interface CompanyProfile {
+  _id: string;
+  companyName: string;
+  logo: string;
+  contactEmail: string;
+  contactPhone: string;
+  description: string;
+  createdBy: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 
 const Settings = () => {
-  const [activeSection, setActiveSection] = useState('general');
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
-  const [maintenanceAlerts, setMaintenanceAlerts] = useState(true);
-  const [routeAlerts, setRouteAlerts] = useState(true);
-  const [driverAlerts, setDriverAlerts] = useState(true);
+  const [activeTab, setActiveTab] = useState('general');
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+  const [formData, setFormData] = useState({
+    companyName: '',
+    contactEmail: '',
+    contactPhone: '',
+    description: '',
+    logo: null as File | null
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
-  const sections = [
+  useEffect(() => {
+    const fetchCompanyProfile = async () => {
+      try {
+        const profile = await companyProfileService.getCompanyProfile();
+        setCompanyProfile(profile);
+        setFormData({
+          companyName: profile.companyName,
+          contactEmail: profile.contactEmail,
+          contactPhone: profile.contactPhone,
+          description: profile.description,
+          logo: null
+        });
+      } catch (err) {
+        setError('Failed to load company profile');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCompanyProfile();
+  }, []);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData(prev => ({ ...prev, logo: e.target.files![0] }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setError(null);
+    setSuccessMessage(null);
+    
+    try {
+      const formDataToSend = new FormData();
+      if (formData.companyName) formDataToSend.append('companyName', formData.companyName);
+      if (formData.contactEmail) formDataToSend.append('contactEmail', formData.contactEmail);
+      if (formData.contactPhone) formDataToSend.append('contactPhone', formData.contactPhone);
+      if (formData.description) formDataToSend.append('description', formData.description);
+      if (formData.logo) formDataToSend.append('logo', formData.logo);
+
+      const updatedProfile = await companyProfileService.updateCompanyProfile(formDataToSend);
+      setCompanyProfile(updatedProfile);
+      setFormData(prev => ({ ...prev, logo: null }));
+      setSuccessMessage('Company profile updated successfully!');
+    } catch (err) {
+      setError('Failed to update company profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordError(null);
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      await authService.changePassword(passwordData.oldPassword, passwordData.newPassword);
+      setPasswordSuccess('Password changed successfully');
+      setPasswordData({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const tabs = [
     {
       id: 'general',
       title: 'General Settings',
       icon: SettingsIcon,
-      description: 'Configure basic system settings and preferences',
       content: (
         <div className="space-y-6">
-          <div className="glass-card p-4">
+          <div className="glass-card p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Company Information</h3>
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex items-center gap-3">
                 <MapPin className="text-gray-400" size={20} />
                 <input
                   type="text"
-                  placeholder="Company Address"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  placeholder="Company Name"
                   className="flex-1 px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
                 />
               </div>
@@ -53,6 +174,9 @@ const Settings = () => {
                 <Phone className="text-gray-400" size={20} />
                 <input
                   type="text"
+                  name="contactPhone"
+                  value={formData.contactPhone}
+                  onChange={handleInputChange}
                   placeholder="Contact Number"
                   className="flex-1 px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
                 />
@@ -61,131 +185,64 @@ const Settings = () => {
                 <Mail className="text-gray-400" size={20} />
                 <input
                   type="email"
+                  name="contactEmail"
+                  value={formData.contactEmail}
+                  onChange={handleInputChange}
                   placeholder="Contact Email"
                   className="flex-1 px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
                 />
               </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Time Settings</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock className="text-gray-400" size={20} />
-                  <span className="text-white">Time Zone</span>
-                </div>
-                <select className="px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white focus:outline-none focus:border-primary-500">
-                  <option>UTC+0</option>
-                  <option>UTC+1</option>
-                  <option>UTC+2</option>
-                  <option>UTC+3</option>
-                </select>
+              <div className="space-y-2">
+                <label className="text-white">Company Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Enter company description"
+                  className="w-full px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
+                  rows={4}
+                />
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="text-gray-400" size={20} />
-                  <span className="text-white">Date Format</span>
-                </div>
-                <select className="px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white focus:outline-none focus:border-primary-500">
-                  <option>DD/MM/YYYY</option>
-                  <option>MM/DD/YYYY</option>
-                  <option>YYYY-MM-DD</option>
-                </select>
+              <div className="space-y-2">
+                <label className="text-white">Company Logo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
+                />
+                {companyProfile?.logo && (
+                  <div className="mt-2">
+                    <img 
+                      src={companyProfile.logo} 
+                      alt="Company Logo" 
+                      className="w-32 h-32 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'notifications',
-      title: 'Notification Settings',
-      icon: Bell,
-      description: 'Configure notification preferences and alerts',
-      content: (
-        <div className="space-y-6">
-          <div className="glass-card p-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Notification Channels</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Mail className="text-gray-400" size={20} />
-                  <span className="text-white">Email Notifications</span>
-                </div>
-                <button
-                  onClick={() => setEmailNotifications(!emailNotifications)}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                    emailNotifications ? 'translate-x-6 bg-primary-500' : 'translate-x-1 bg-gray-400'
-                  }`} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Phone className="text-gray-400" size={20} />
-                  <span className="text-white">SMS Notifications</span>
-                </div>
-                <button
-                  onClick={() => setSmsNotifications(!smsNotifications)}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                    smsNotifications ? 'translate-x-6 bg-primary-500' : 'translate-x-1 bg-gray-400'
-                  }`} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Alert Types</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Bus className="text-gray-400" size={20} />
-                  <span className="text-white">Maintenance Alerts</span>
-                </div>
-                <button
-                  onClick={() => setMaintenanceAlerts(!maintenanceAlerts)}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                    maintenanceAlerts ? 'translate-x-6 bg-primary-500' : 'translate-x-1 bg-gray-400'
-                  }`} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Route className="text-gray-400" size={20} />
-                  <span className="text-white">Route Alerts</span>
-                </div>
-                <button
-                  onClick={() => setRouteAlerts(!routeAlerts)}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                    routeAlerts ? 'translate-x-6 bg-primary-500' : 'translate-x-1 bg-gray-400'
-                  }`} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Users className="text-gray-400" size={20} />
-                  <span className="text-white">Driver Alerts</span>
-                </div>
-                <button
-                  onClick={() => setDriverAlerts(!driverAlerts)}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                    driverAlerts ? 'translate-x-6 bg-primary-500' : 'translate-x-1 bg-gray-400'
-                  }`} />
-                </button>
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
+                  isSaving 
+                    ? 'bg-primary-600 cursor-not-allowed' 
+                    : 'bg-primary-500 hover:bg-primary-600'
+                } text-white transition-colors`}
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         </div>
       )
@@ -194,15 +251,27 @@ const Settings = () => {
       id: 'security',
       title: 'Security Settings',
       icon: Shield,
-      description: 'Configure security and access control settings',
       content: (
         <div className="space-y-6">
-          <div className="glass-card p-4">
+          <div className="glass-card p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Password Settings</h3>
-            <div className="space-y-4">
+            {passwordError && (
+              <div className="mb-4 p-4 bg-red-500/10 border border-red-500 rounded-lg text-red-500">
+                {passwordError}
+              </div>
+            )}
+            {passwordSuccess && (
+              <div className="mb-4 p-4 bg-green-500/10 border border-green-500 rounded-lg text-green-500">
+                {passwordSuccess}
+              </div>
+            )}
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
               <div className="flex items-center gap-3">
                 <input
                   type="password"
+                  name="oldPassword"
+                  value={passwordData.oldPassword}
+                  onChange={handlePasswordChange}
                   placeholder="Current Password"
                   className="flex-1 px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
                 />
@@ -210,6 +279,9 @@ const Settings = () => {
               <div className="flex items-center gap-3">
                 <input
                   type="password"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
                   placeholder="New Password"
                   className="flex-1 px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
                 />
@@ -217,141 +289,117 @@ const Settings = () => {
               <div className="flex items-center gap-3">
                 <input
                   type="password"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
                   placeholder="Confirm New Password"
                   className="flex-1 px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-primary-500"
                 />
               </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Two-Factor Authentication</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-white">Enable 2FA</span>
-                <button className="px-4 py-2 rounded-lg bg-primary-900 text-white text-sm">
-                  Enable
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'data',
-      title: 'Data Management',
-      icon: Database,
-      description: 'Configure data backup and storage settings',
-      content: (
-        <div className="space-y-6">
-          <div className="glass-card p-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Backup Settings</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-white">Automatic Backups</span>
-                <select className="px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white focus:outline-none focus:border-primary-500">
-                  <option>Daily</option>
-                  <option>Weekly</option>
-                  <option>Monthly</option>
-                </select>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white">Backup Location</span>
-                <button className="px-4 py-2 rounded-lg bg-primary-900 text-white text-sm">
-                  Change
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4">
-            <h3 className="text-lg font-semibold text-white mb-4">Data Retention</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-white">Retention Period</span>
-                <select className="px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white focus:outline-none focus:border-primary-500">
-                  <option>3 months</option>
-                  <option>6 months</option>
-                  <option>1 year</option>
-                  <option>2 years</option>
-                </select>
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
+                  isChangingPassword 
+                    ? 'bg-primary-600 cursor-not-allowed' 
+                    : 'bg-primary-500 hover:bg-primary-600'
+                } text-white transition-colors`}
+              >
+                {isChangingPassword ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                    <span>Changing Password...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    <span>Change Password</span>
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         </div>
       )
     }
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="h-full"
-    >
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Settings</h1>
-          <p className="text-sm text-gray-400 mt-1">Configure system settings and preferences</p>
-        </div>
-        <button className="btn-primary flex items-center gap-2">
-          <Save size={16} />
-          Save Changes
-        </button>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-6xl mx-auto"
+      >
+        <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
+        
+        {error && (
+          <div className="mb-4 p-4 bg-red-500/10 border border-red-500 rounded-lg text-red-500">
+            {error}
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-500/10 border border-green-500 rounded-lg text-green-500">
+            {successMessage}
+          </div>
+        )}
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-220px)]">
-        {/* Settings Navigation */}
-        <div className="space-y-2">
-          {sections.map(section => (
-            <button
-              key={section.id}
-              className={`w-full p-4 rounded-lg text-left transition-colors ${
-                activeSection === section.id
-                  ? 'bg-primary-900 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-              }`}
-              onClick={() => setActiveSection(section.id)}
-            >
-              <div className="flex items-center gap-3">
-                <section.icon size={20} />
-                <span className="font-medium">{section.title}</span>
-              </div>
-            </button>
-          ))}
-        </div>
+        <div className="flex gap-8">
+          {/* Tabs Navigation */}
+          <div className="w-64 space-y-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full p-4 rounded-lg text-left transition-colors flex items-center gap-3 ${
+                  activeTab === tab.id
+                    ? 'bg-primary-900 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                }`}
+              >
+                <tab.icon size={20} />
+                <span>{tab.title}</span>
+              </button>
+            ))}
+          </div>
 
-        {/* Settings Content */}
-        <div className="lg:col-span-3 space-y-6 overflow-y-auto pr-2">
-          {sections.map(section => (
-            <motion.div
-              key={section.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ 
-                opacity: activeSection === section.id ? 1 : 0,
-                y: activeSection === section.id ? 0 : 20
-              }}
-              className={`${activeSection === section.id ? 'block' : 'hidden'}`}
-            >
-              <div className="glass-card p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">{section.title}</h2>
-                    <p className="text-sm text-gray-400">{section.description}</p>
-                  </div>
-                </div>
-                {section.content}
-              </div>
-            </motion.div>
-          ))}
+          {/* Tab Content */}
+          <div className="flex-1">
+            {tabs.map((tab) => (
+              <motion.div
+                key={tab.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ 
+                  opacity: activeTab === tab.id ? 1 : 0,
+                  x: activeTab === tab.id ? 0 : 20
+                }}
+                className={`${activeTab === tab.id ? 'block' : 'hidden'}`}
+              >
+                {tab.content}
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

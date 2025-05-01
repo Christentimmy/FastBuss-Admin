@@ -8,12 +8,12 @@ import {
   Route, 
   CalendarClock, 
   BarChart3, 
-  Bell, 
   Settings, 
   Menu,
   X,
   LogOut,
-  Building2
+  Building2,
+  UserCog
 } from 'lucide-react';
 import { authService } from '../../services/authService';
 
@@ -46,7 +46,7 @@ const Sidebar = () => {
     { id: '/schedule', icon: <CalendarClock size={20} />, label: 'Schedule' },
     { id: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
     ...(userRole === 'super_admin' ? [{ id: '/companies', icon: <Building2 size={20} />, label: 'Companies' }] : []),
-    { id: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
+    { id: '/staff', icon: <UserCog size={20} />, label: 'Staff Management' },
     { id: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 

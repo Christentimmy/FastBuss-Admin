@@ -9,9 +9,9 @@ import DriversManagement from './pages/DriversManagement';
 import RoutesManagement from './pages/RoutesManagement';
 import ScheduleManagement from './pages/ScheduleManagement';
 import Analytics from './pages/Analytics';
-import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import CompaniesManagement from './pages/CompaniesManagement';
+import StaffManagement from './pages/StaffManagement';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import AppInitializer from './components/auth/AppInitializer';
@@ -91,14 +91,14 @@ const App = () => {
               <Settings />
             </AuthenticatedLayout>
           } />
-          <Route path="/notifications" element={
-            <AuthenticatedLayout>
-              <Notifications />
-            </AuthenticatedLayout>
-          } />
           <Route path="/companies" element={
             <AuthenticatedLayout>
               <CompaniesManagement />
+            </AuthenticatedLayout>
+          } />
+          <Route path="/staff" element={
+            <AuthenticatedLayout>
+              <StaffManagement />
             </AuthenticatedLayout>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />

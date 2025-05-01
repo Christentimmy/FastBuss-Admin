@@ -130,5 +130,26 @@ export const authService = {
       return true;
     }
     return false;
+  },
+
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    const token = authService.getToken();
+    const response = await fetch(`${BASE_URL}/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        oldPassword,
+        newPassword
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to change password');
+    }
   }
 }; 
