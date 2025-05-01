@@ -58,6 +58,7 @@ const ScheduleManagement = () => {
     arrivalTime: string;
     driverId: string;
   } | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Fetch schedules on component mount
   useEffect(() => {
@@ -133,7 +134,10 @@ const ScheduleManagement = () => {
   }, []);
 
   const handleCreateSchedule = async () => {
+    if (isCreating) return; // Prevent double-clicking
+    
     try {
+      setIsCreating(true);
       setFormError(null);
       const token = authService.getToken();
       if (!token) {
@@ -164,6 +168,8 @@ const ScheduleManagement = () => {
     } catch (err) {
       setFormError('Failed to create schedule. Please try again.');
       console.error('Error creating schedule:', err);
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -412,14 +418,23 @@ const ScheduleManagement = () => {
                     <button
                       onClick={() => setShowNewScheduleForm(false)}
                       className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white"
+                      disabled={isCreating}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleCreateSchedule}
-                      className="btn-primary text-sm"
+                      className="btn-primary text-sm flex items-center gap-2"
+                      disabled={isCreating}
                     >
-                      Create Schedule
+                      {isCreating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Schedule'
+                      )}
                     </button>
                   </div>
                 </div>
