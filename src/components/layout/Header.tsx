@@ -104,10 +104,8 @@ const NotificationDropdown = ({
 
 const Header = () => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [notificationButtonRect, setNotificationButtonRect] = useState<DOMRect | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
   
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -117,38 +115,13 @@ const Header = () => {
       setNotificationButtonRect(notificationButtonRef.current.getBoundingClientRect());
     }
     setShowNotifications(!showNotifications);
-    if (showSearch) setShowSearch(false);
   };
-
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-    if (showNotifications) setShowNotifications(false);
-    if (showSearch && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchInputRef.current && !searchInputRef.current.contains(event.target as Node) && 
-          !event.target.closest('[data-search-toggle]')) {
-        setShowSearch(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   // Close notifications on escape key
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowNotifications(false);
-        setShowSearch(false);
       }
     };
 
@@ -177,43 +150,6 @@ const Header = () => {
             onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
-        
-        {/* Mobile Search Toggle */}
-        <button
-          className="md:hidden p-2 rounded-full bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
-          onClick={toggleSearch}
-          data-search-toggle
-        >
-          <Search size={18} className="text-gray-300" />
-        </button>
-        
-        {/* Mobile Search Dropdown */}
-        <AnimatePresence>
-          {showSearch && (
-            <motion.div 
-              className="absolute top-16 left-0 right-0 bg-gray-900/90 backdrop-blur-md border-b border-gray-800/50 p-2 z-30 md:hidden"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search size={18} className="text-gray-400" />
-                </div>
-                <input
-                  ref={searchInputRef}
-                  type="search"
-                  className="block w-full p-2 pl-10 text-sm text-gray-300 border border-gray-700 rounded-lg bg-gray-800/50 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                  placeholder="Search buses, routes, drivers..."
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  autoFocus
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
         
         <div className="flex items-center ml-auto">
           {/* Date/Time - Hide on small screens */}
@@ -248,8 +184,8 @@ const Header = () => {
             
             <AnimatePresence>
               {showNotifications && (
-                <NotificationDropdown 
-                  notifications={notifications} 
+                <NotificationDropdown
+                  notifications={notifications}
                   onClose={() => setShowNotifications(false)}
                   buttonRect={notificationButtonRect}
                 />

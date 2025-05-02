@@ -148,39 +148,39 @@ const CompaniesManagement: React.FC = () => {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white">Companies Management</h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Companies Management</h1>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           <span>Add New Company</span>
         </button>
       </div>
 
-      <div className="bg-dark-blue rounded-lg p-6 space-y-6">
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-dark-blue rounded-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search companies..."
-              className="w-full pl-10 pr-4 py-2 bg-dark rounded-lg text-white placeholder-gray-400"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search companies..."
+              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 bg-dark rounded-lg text-white placeholder-gray-400 text-sm sm:text-base"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <select
-              className="pl-10 pr-4 py-2 bg-dark rounded-lg text-white appearance-none"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'blocked')}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="blocked">Blocked</option>
-          </select>
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            <select
+              className="w-full sm:w-auto pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 bg-dark rounded-lg text-white appearance-none text-sm sm:text-base"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'blocked')}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="blocked">Blocked</option>
+            </select>
           </div>
         </div>
 
