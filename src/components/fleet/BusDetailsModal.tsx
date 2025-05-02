@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Bus, MapPin, Users, Calendar, Clock, Phone, Mail, User, Settings } from 'lucide-react';
+import { X, Bus, MapPin, Users, Calendar, Clock, Phone, Mail, User, Settings, Loader2 } from 'lucide-react';
 import { Bus as BusType, busService, BusDetailsResponse } from '../../services/busService';
 import ShimmerEffect from '../common/ShimmerEffect';
 
@@ -74,7 +74,7 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
     >
       <div 
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -85,19 +85,19 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative bg-dark-blue rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+        className="relative bg-dark-blue rounded-lg p-3 sm:p-6 w-full max-w-2xl mx-3 max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-900/60 rounded-md">
-              <Bus size={24} className="text-primary-400" />
+        <div className="flex justify-between items-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-700">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-primary-900/60 rounded-md">
+              <Bus size={18} className="text-primary-400 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">{bus.busName}</h2>
+              <h2 className="text-base sm:text-xl font-bold text-white">{bus.busName}</h2>
               <div className="flex items-center">
-                <span className={`w-2 h-2 rounded-full mr-1.5 ${getStatusColor(bus.status)}`}></span>
-                <span className="text-sm text-gray-400">{getStatusText(bus.status)}</span>
+                <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1 sm:mr-1.5 ${getStatusColor(bus.status)}`}></span>
+                <span className="text-xs sm:text-sm text-gray-400">{getStatusText(bus.status)}</span>
               </div>
             </div>
           </div>
@@ -105,80 +105,80 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
           >
-            <X size={20} />
+            <X size={18} className="sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/20 text-red-400 rounded-lg">
+          <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-red-500/20 text-red-400 rounded-lg text-xs sm:text-sm">
             {error}
           </div>
         )}
 
         {isLoadingDetails ? (
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {/* Basic Information Shimmer */}
-            <div className="glass-card p-4 rounded-lg">
-              <ShimmerEffect className="h-6 w-48 mb-4" />
-              <div className="space-y-3">
+            <div className="glass-card p-3 sm:p-4 rounded-lg">
+              <ShimmerEffect className="h-4 sm:h-6 w-32 sm:w-48 mb-3 sm:mb-4" />
+              <div className="space-y-2 sm:space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <ShimmerEffect className="h-4 w-32" />
-                    <ShimmerEffect className="h-4 w-48" />
+                  <div key={i} className="flex items-center gap-2 sm:gap-4">
+                    <ShimmerEffect className="h-3 sm:h-4 w-24 sm:w-32" />
+                    <ShimmerEffect className="h-3 sm:h-4 w-32 sm:w-48" />
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Location Information Shimmer */}
-            <div className="glass-card p-4 rounded-lg">
-              <ShimmerEffect className="h-6 w-48 mb-4" />
-              <div className="space-y-3">
+            <div className="glass-card p-3 sm:p-4 rounded-lg">
+              <ShimmerEffect className="h-4 sm:h-6 w-32 sm:w-48 mb-3 sm:mb-4" />
+              <div className="space-y-2 sm:space-y-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <ShimmerEffect className="h-4 w-32" />
-                    <ShimmerEffect className="h-4 w-48" />
+                  <div key={i} className="flex items-center gap-2 sm:gap-4">
+                    <ShimmerEffect className="h-3 sm:h-4 w-24 sm:w-32" />
+                    <ShimmerEffect className="h-3 sm:h-4 w-32 sm:w-48" />
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Driver Information Shimmer */}
-            <div className="glass-card p-4 rounded-lg">
-              <ShimmerEffect className="h-6 w-48 mb-4" />
-              <div className="space-y-3">
+            <div className="glass-card p-3 sm:p-4 rounded-lg">
+              <ShimmerEffect className="h-4 sm:h-6 w-32 sm:w-48 mb-3 sm:mb-4" />
+              <div className="space-y-2 sm:space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <ShimmerEffect className="h-4 w-32" />
-                    <ShimmerEffect className="h-4 w-48" />
+                  <div key={i} className="flex items-center gap-2 sm:gap-4">
+                    <ShimmerEffect className="h-3 sm:h-4 w-24 sm:w-32" />
+                    <ShimmerEffect className="h-3 sm:h-4 w-32 sm:w-48" />
                   </div>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {/* Basic Information */}
-            <div className="glass-card p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <Users size={18} className="mr-2 text-primary-400" />
+            <div className="glass-card p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
+                <Users size={16} className="mr-1.5 sm:mr-2 text-primary-400 sm:w-[18px] sm:h-[18px]" />
                 Basic Information
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center text-sm">
-                  <span className="text-gray-400 w-32">Bus Number:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                <div className="flex items-center text-xs sm:text-sm">
+                  <span className="text-gray-400 w-24 sm:w-32">Bus Number:</span>
                   <span className="text-white font-medium">{busDetails?.plateNumber}</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <span className="text-gray-400 w-32">Type:</span>
+                <div className="flex items-center text-xs sm:text-sm">
+                  <span className="text-gray-400 w-24 sm:w-32">Type:</span>
                   <span className="text-white font-medium capitalize">{busDetails?.type}</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <span className="text-gray-400 w-32">Capacity:</span>
+                <div className="flex items-center text-xs sm:text-sm">
+                  <span className="text-gray-400 w-24 sm:w-32">Capacity:</span>
                   <span className="text-white font-medium">{busDetails?.capacity} passengers</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <span className="text-gray-400 w-32">Status:</span>
+                <div className="flex items-center text-xs sm:text-sm">
+                  <span className="text-gray-400 w-24 sm:w-32">Status:</span>
                   <span className={`font-medium ${getStatusColor(busDetails?.status || '')}`}>
                     {getStatusText(busDetails?.status || '')}
                   </span>
@@ -187,24 +187,24 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
             </div>
 
             {/* Location Information */}
-            <div className="glass-card p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <MapPin size={18} className="mr-2 text-primary-400" />
+            <div className="glass-card p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
+                <MapPin size={16} className="mr-1.5 sm:mr-2 text-primary-400 sm:w-[18px] sm:h-[18px]" />
                 Location Information
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {busDetails?.location?.latitude && busDetails?.location?.longitude ? (
-                  <div className="flex items-center text-sm">
-                    <span className="text-gray-400 w-32">Current Location:</span>
+                  <div className="flex items-center text-xs sm:text-sm">
+                    <span className="text-gray-400 w-24 sm:w-32">Current Location:</span>
                     <span className="text-white font-medium">
                       {busDetails.location.address || `${busDetails.location.latitude}, ${busDetails.location.longitude}`}
                     </span>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-400">No location data available</div>
+                  <div className="text-xs sm:text-sm text-gray-400">No location data available</div>
                 )}
-                <div className="flex items-center text-sm">
-                  <span className="text-gray-400 w-32">Last Updated:</span>
+                <div className="flex items-center text-xs sm:text-sm">
+                  <span className="text-gray-400 w-24 sm:w-32">Last Updated:</span>
                   <span className="text-white font-medium">
                     {busDetails?.location?.timestamp ? new Date(busDetails.location.timestamp).toLocaleString() : 'N/A'}
                   </span>
@@ -214,26 +214,26 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
 
             {/* Driver Information */}
             {busDetails?.driver && (
-              <div className="glass-card p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <User size={18} className="mr-2 text-primary-400" />
+              <div className="glass-card p-3 sm:p-4 rounded-lg">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
+                  <User size={16} className="mr-1.5 sm:mr-2 text-primary-400 sm:w-[18px] sm:h-[18px]" />
                   Driver Information
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm">
-                    <span className="text-gray-400 w-32">Name:</span>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center text-xs sm:text-sm">
+                    <span className="text-gray-400 w-24 sm:w-32">Name:</span>
                     <span className="text-white font-medium">{busDetails.driver.name}</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <span className="text-gray-400 w-32">Email:</span>
+                  <div className="flex items-center text-xs sm:text-sm">
+                    <span className="text-gray-400 w-24 sm:w-32">Email:</span>
                     <span className="text-white font-medium">{busDetails.driver.email}</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <span className="text-gray-400 w-32">Phone:</span>
+                  <div className="flex items-center text-xs sm:text-sm">
+                    <span className="text-gray-400 w-24 sm:w-32">Phone:</span>
                     <span className="text-white font-medium">{busDetails.driver.phone}</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <span className="text-gray-400 w-32">Status:</span>
+                  <div className="flex items-center text-xs sm:text-sm">
+                    <span className="text-gray-400 w-24 sm:w-32">Status:</span>
                     <span className={`font-medium ${
                       busDetails.driver.status === 'active' ? 'text-success-500' : 'text-gray-500'
                     }`}>
@@ -245,38 +245,50 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
             )}
 
             {/* Status Management */}
-            <div className="mt-8 pt-6 border-t border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <Settings size={18} className="mr-2 text-primary-400" />
-                Status Management
+            <div className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-700">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
+                <Settings size={16} className="mr-1.5 sm:mr-2 text-primary-400 sm:w-[18px] sm:h-[18px]" />
+                Bus Management
               </h3>
-              <div className="flex flex-wrap gap-3">
-                {bus.status === 'blocked' && (
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {bus.status !== 'active' && (
                   <button
                     onClick={() => handleAction('activate')}
-                    className={`px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors ${loadingAction === 'activate' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={loadingAction === 'activate'}
+                    disabled={loadingAction !== null}
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg text-xs sm:text-sm transition-colors disabled:opacity-50 flex items-center gap-1 sm:gap-2"
                   >
-                    {loadingAction === 'activate' ? 'Loading...' : 'Activate Bus'}
+                    {loadingAction === 'activate' ? (
+                      <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> Activating...</>
+                    ) : (
+                      'Activate Bus'
+                    )}
                   </button>
                 )}
-
-                {bus.status !== 'blocked' && (
+                
+                {bus.status !== 'inactive' && (
                   <button
                     onClick={() => handleAction('block')}
-                    className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'block' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={loadingAction === 'block'}
+                    disabled={loadingAction !== null}
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-warning-600 hover:bg-warning-700 text-white rounded-lg text-xs sm:text-sm transition-colors disabled:opacity-50 flex items-center gap-1 sm:gap-2"
                   >
-                    {loadingAction === 'block' ? 'Loading...' : 'Block Bus'}
+                    {loadingAction === 'block' ? (
+                      <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> Deactivating...</>
+                    ) : (
+                      'Deactivate Bus'
+                    )}
                   </button>
                 )}
-
+                
                 <button
                   onClick={() => handleAction('delete')}
-                  className={`px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors ${loadingAction === 'delete' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={loadingAction === 'delete'}
+                  disabled={loadingAction !== null}
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-error-600 hover:bg-error-700 text-white rounded-lg text-xs sm:text-sm transition-colors disabled:opacity-50 flex items-center gap-1 sm:gap-2"
                 >
-                  {loadingAction === 'delete' ? 'Loading...' : 'Delete Bus'}
+                  {loadingAction === 'delete' ? (
+                    <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> Deleting...</>
+                  ) : (
+                    'Delete Bus'
+                  )}
                 </button>
               </div>
             </div>

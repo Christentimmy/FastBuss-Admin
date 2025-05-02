@@ -142,22 +142,22 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-2xl rounded-lg bg-gray-900 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <Dialog.Title className="text-xl font-semibold text-white">Edit Route</Dialog.Title>
-            <button onClick={onClose} className="text-gray-400 hover:text-white">
+      <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4">
+        <Dialog.Panel className="w-full max-w-lg sm:max-w-2xl rounded-lg bg-gray-900 p-3 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <Dialog.Title className="text-lg sm:text-xl font-semibold text-white">Edit Route</Dialog.Title>
+            <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close dialog">
               <X size={20} />
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-800 rounded-md text-red-400">
+            <div className="mb-4 p-2 sm:p-3 bg-red-900/50 border border-red-800 rounded-md text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">Route Name</label>
               <input
@@ -182,7 +182,7 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
                 <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
               </div>
               {originSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {originSuggestions.map((suggestion) => (
                     <button
                       key={suggestion.place_id}
@@ -199,7 +199,7 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
                         setOriginInput(suggestion.display_name);
                         setOriginSuggestions([]);
                       }}
-                      className="w-full px-3 py-2 text-left text-white hover:bg-gray-700"
+                      className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 text-sm truncate"
                     >
                       {suggestion.display_name}
                     </button>
@@ -221,7 +221,7 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
                 <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
               </div>
               {destinationSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {destinationSuggestions.map((suggestion) => (
                     <button
                       key={suggestion.place_id}
@@ -238,7 +238,7 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
                         setDestinationInput(suggestion.display_name);
                         setDestinationSuggestions([]);
                       }}
-                      className="w-full px-3 py-2 text-left text-white hover:bg-gray-700"
+                      className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 text-sm truncate"
                     >
                       {suggestion.display_name}
                     </button>
@@ -288,18 +288,18 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
               </select>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-4 sm:mt-6 pt-2 sm:pt-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-400 hover:text-white"
+                className="px-3 sm:px-4 py-2 text-gray-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 sm:px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">

@@ -187,44 +187,44 @@ const StaffManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 p-6">
       {/* Header */}
-      <div className="relative mb-8">
+      <div className="relative mb-6 sm:mb-8">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-primary-600/20 blur-3xl" />
-        <div className="relative flex justify-between items-center">
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">
-          Staff Management
+            <h1 className="text-2xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">
+              Staff Management
             </h1>
-            <p className="text-gray-400 mt-2">Manage your staff members</p>
+            <p className="text-sm sm:text-base text-gray-400 mt-1 sm:mt-2">Manage your staff members</p>
           </div>
           <button 
-            className="btn-holographic flex items-center gap-2"
+            className="btn-holographic flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
             onClick={handleAddStaff}
           >
-            <UserPlus size={16} />
-          Add Staff Member
+            <UserPlus size={14} className="sm:w-4 sm:h-4" />
+            Add Staff Member
           </button>
         </div>
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mb-4 sm:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-          placeholder="Search staff members..."
+              placeholder="Search staff members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-900/50 border border-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-gray-900/50 border border-gray-800 rounded-md text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
+            <Filter size={14} className="text-gray-400" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="flex-1 bg-gray-900/50 border border-gray-800 rounded-md text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 bg-gray-900/50 border border-gray-800 rounded-md text-sm sm:text-base text-white px-2 sm:px-3 py-1.5 sm:py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>

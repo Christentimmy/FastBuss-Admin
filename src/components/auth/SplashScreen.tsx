@@ -30,7 +30,7 @@ const SplashScreen = () => {
   }, [navigate]);
 
   return (
-    <div className="fixed inset-0 bg-dark-blue flex items-center justify-center">
+    <div className="fixed inset-0 bg-dark-blue flex items-center justify-center z-[9999] backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

@@ -44,19 +44,19 @@ const DriverList: React.FC<DriverListProps> = ({ drivers }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium text-white">Active Drivers</h3>
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="text-base sm:text-lg font-medium text-white">Active Drivers</h3>
         <span className="text-xs text-gray-400">{activeDrivers.length} drivers on duty</span>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {activeDrivers.length === 0 ? (
-          <p className="text-gray-400 text-center py-6">No active drivers at the moment</p>
+          <p className="text-gray-400 text-center py-4 sm:py-6 text-sm">No active drivers at the moment</p>
         ) : (
           activeDrivers.map((driver, index) => (
             <motion.div 
               key={driver.id}
-              className="flex items-center p-3 rounded-lg bg-gray-800/20 border border-gray-700/30"
+              className="flex items-center p-2 sm:p-3 rounded-lg bg-gray-800/20 border border-gray-700/30"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1, duration: 0.3 }}
@@ -66,45 +66,45 @@ const DriverList: React.FC<DriverListProps> = ({ drivers }) => {
               }}
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-full overflow-hidden">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex-shrink-0">
                   <img 
                     src={driver.avatar} 
                     alt={driver.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-gray-800 ${getStatusColor(driver.status)}`}></span>
+                <span className={`absolute bottom-0 right-0 w-2 h-2 sm:w-3 sm:h-3 rounded-full border-2 border-gray-800 ${getStatusColor(driver.status)}`}></span>
               </div>
               
-              <div className="ml-3 flex-1">
+              <div className="ml-2 sm:ml-3 flex-1 min-w-0">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-white">{driver.name}</p>
-                    <div className="flex items-center text-xs text-gray-400 mt-0.5">
-                      <div className={`px-1.5 py-0.5 rounded mr-2 text-xs ${
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-white truncate">{driver.name}</p>
+                    <div className="flex items-center text-xs text-gray-400 mt-0.5 flex-wrap gap-1">
+                      <div className={`px-1 sm:px-1.5 py-0.5 rounded text-xs ${
                         driver.status === 'on-duty' ? 'bg-success-900/30 text-success-400' : 
                         'bg-primary-900/30 text-primary-400'
                       }`}>
                         {getStatusText(driver.status)}
                       </div>
                       <div className="flex items-center">
-                        <Star size={12} className="text-warning-400 mr-1" />
+                        <Star size={10} className="text-warning-400 mr-0.5 sm:mr-1" />
                         <span>{driver.rating}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex space-x-1">
-                    <button className="p-1.5 rounded-full bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300">
-                      <Phone size={14} />
+                  <div className="flex space-x-1 ml-1 flex-shrink-0">
+                    <button className="p-1 sm:p-1.5 rounded-full bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300">
+                      <Phone size={12} className="sm:w-[14px] sm:h-[14px]" />
                     </button>
                     {driver.status === 'available' ? (
-                      <button className="p-1.5 rounded-full bg-primary-900/50 hover:bg-primary-800/50 transition-colors text-primary-400">
-                        <CheckCircle2 size={14} />
+                      <button className="p-1 sm:p-1.5 rounded-full bg-primary-900/50 hover:bg-primary-800/50 transition-colors text-primary-400">
+                        <CheckCircle2 size={12} className="sm:w-[14px] sm:h-[14px]" />
                       </button>
                     ) : (
-                      <button className="p-1.5 rounded-full bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300">
-                        <Clock size={14} />
+                      <button className="p-1 sm:p-1.5 rounded-full bg-gray-700/50 hover:bg-gray-700 transition-colors text-gray-300">
+                        <Clock size={12} className="sm:w-[14px] sm:h-[14px]" />
                       </button>
                     )}
                   </div>
@@ -115,7 +115,7 @@ const DriverList: React.FC<DriverListProps> = ({ drivers }) => {
         )}
       </div>
       
-      <div className="mt-4">
+      <div className="mt-3 sm:mt-4">
         <button className="w-full btn-secondary text-xs py-1.5">
           View All Drivers
         </button>

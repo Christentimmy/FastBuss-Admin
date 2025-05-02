@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
   Bus, 
   LayoutDashboard, 
   Users, 
   Route, 
   CalendarClock, 
-  BarChart3, 
   Settings, 
   Menu,
   X,
   LogOut,
   Building2,
   UserCog,
-  User,
   Loader2
 } from 'lucide-react';
 import { authService } from '../../services/authService';
@@ -46,6 +43,25 @@ const Sidebar = () => {
     setIsMobileOpen(!isMobileOpen);
   };
 
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    if (isMobileOpen) {
+      setIsMobileOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Close mobile sidebar on screen resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && isMobileOpen) {
+        setIsMobileOpen(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileOpen]);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -71,23 +87,26 @@ const Sidebar = () => {
   const userRole = authService.getTokenPayload()?.role;
 
   const menuItems = [
-    { id: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+    { id: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { id: '/fleet', icon: <Bus size={20} />, label: 'Fleet Management' },
     { id: '/drivers', icon: <Users size={20} />, label: 'Drivers' },
     { id: '/routes', icon: <Route size={20} />, label: 'Routes' },
     { id: '/schedule', icon: <CalendarClock size={20} />, label: 'Schedule' },
-    { id: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
+    // { id: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
     ...(userRole === 'super_admin' ? [{ id: '/companies', icon: <Building2 size={20} />, label: 'Companies' }] : []),
-    { id: '/staff', icon: <UserCog size={20} />, label: 'Staff Management' },
-    { id: '/settings', icon: <Settings size={20} />, label: 'Settings' },
+    ...(userRole && ['super_admin', 'sub_admin'].includes(userRole) ? [
+      { id: '/staff', icon: <UserCog size={20} />, label: 'Staff Management' },
+      { id: '/settings', icon: <Settings size={20} />, label: 'Settings' }
+    ] : []),
   ];
 
   return (
     <>
       {/* Mobile Menu Button */}
       <button 
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-primary-800/50 text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-primary-600/80 text-white shadow-md"
         onClick={toggleMobileSidebar}
+        aria-label="Toggle Menu"
       >
         <Menu size={20} />
       </button>
@@ -95,48 +114,38 @@ const Sidebar = () => {
       {/* Mobile Sidebar Overlay */}
       {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
           onClick={toggleMobileSidebar}
+          aria-hidden="true"
         ></div>
       )}
       
       {/* Sidebar */}
-      <motion.aside
-        className={`fixed lg:relative h-screen z-50 lg:z-auto bg-gray-900/70 backdrop-blur-md border-r border-gray-800/50
-                   ${isMobileOpen ? 'left-0' : '-left-72'} lg:left-0 transition-all duration-300`}
-        initial={false}
-        animate={{ 
-          width: isCollapsed ? '80px' : '256px',
-        }}
+      <aside
+        className={`fixed lg:relative h-screen z-50 lg:z-30 bg-gray-900/90 backdrop-blur-md border-r border-gray-800/50
+                   w-64 lg:w-auto max-w-[80vw] transition-all duration-300 ease-in-out
+                   ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="flex flex-col h-full">
           {/* Logo and Toggle */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800/50">
-            <motion.div 
-              className="flex items-center gap-3"
-              animate={{ opacity: isCollapsed ? 0 : 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white flex-shrink-0">
                 <Bus size={20} className="text-white" />
               </div>
               {!isCollapsed && (
-                <motion.h1 
-                  className="text-xl font-semibold text-white"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <h1 className="text-xl font-semibold text-white whitespace-nowrap overflow-hidden">
                   FutureBus
-                </motion.h1>
+                </h1>
               )}
-            </motion.div>
+            </div>
             
             <div className="flex">
               {/* Mobile Close Button */}
               <button 
                 className="lg:hidden p-1 rounded-md hover:bg-gray-800/50"
                 onClick={toggleMobileSidebar}
+                aria-label="Close Menu"
               >
                 <X size={20} className="text-gray-400" />
               </button>
@@ -145,6 +154,7 @@ const Sidebar = () => {
               <button
                 className="hidden lg:flex p-1 rounded-md hover:bg-gray-800/50"
                 onClick={toggleSidebar}
+                aria-label="Toggle Sidebar Width"
               >
                 <Menu size={20} className="text-gray-400" />
               </button>
@@ -163,16 +173,11 @@ const Sidebar = () => {
                       if (isMobileOpen) toggleMobileSidebar();
                     }}
                   >
-                    {item.icon}
+                    <span className="flex-shrink-0">{item.icon}</span>
                     {!isCollapsed && (
-                      <motion.span
-                        initial={false}
-                        animate={{ opacity: isCollapsed ? 0 : 1, width: isCollapsed ? 0 : 'auto' }}
-                        transition={{ duration: 0.2 }}
-                        className="whitespace-nowrap overflow-hidden"
-                      >
+                      <span className="whitespace-nowrap overflow-hidden">
                         {item.label}
-                      </motion.span>
+                      </span>
                     )}
                   </button>
                 </li>
@@ -189,30 +194,32 @@ const Sidebar = () => {
             ) : error ? (
               <div className="text-red-400 text-sm p-4">{error}</div>
             ) : userProfile ? (
-              <div className="flex items-center gap-4">
-                <div className="relative">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-shrink-0">
                   <Avatar
                     name={userProfile.name}
                     status={userProfile.status as 'active' | 'inactive' | 'pending'}
                     size="md"
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold truncate">{userProfile.name}</h3>
-                  <p className="text-gray-400 text-sm truncate capitalize">{userProfile.role}</p>
-                </div>
+                {!isCollapsed && (
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-white font-semibold truncate text-sm">{userProfile.name}</h3>
+                    <p className="text-gray-400 text-xs truncate capitalize">{userProfile.role}</p>
+                  </div>
+                )}
                 <button
                   onClick={handleLogout}
-                  className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors flex-shrink-0"
                   title="Logout"
                 >
                   <LogOut size={16} className="text-gray-400" />
                 </button>
-            </div>
+              </div>
             ) : null}
           </div>
         </div>
-      </motion.aside>
+      </aside>
     </>
   );
 };

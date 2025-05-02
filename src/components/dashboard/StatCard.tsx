@@ -33,19 +33,19 @@ const StatCard: React.FC<StatCardProps> = ({
       whileHover={{ y: -5 }}
     >
       <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-sm text-gray-400 mb-1">{title}</h3>
-          <div className="flex items-end">
-            <span className="text-2xl font-semibold text-white">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xs sm:text-sm text-gray-400 mb-1">{title}</h3>
+          <div className="flex items-end flex-wrap">
+            <span className="text-lg sm:text-xl md:text-2xl font-semibold text-white truncate mr-1">
               {value}
             </span>
             {metric && (
-              <span className="ml-1 text-sm text-gray-400">{metric}</span>
+              <span className="text-xs sm:text-sm text-gray-400">{metric}</span>
             )}
           </div>
           
           {change && (
-            <div className="flex items-center mt-2">
+            <div className="flex items-center mt-1 sm:mt-2">
               <span className={`text-xs font-medium ${change.isPositive ? 'text-success-400' : 'text-error-400'}`}>
                 {change.isPositive ? '+' : ''}{change.value}%
               </span>
@@ -54,8 +54,8 @@ const StatCard: React.FC<StatCardProps> = ({
           )}
         </div>
         
-        <div className={`p-3 rounded-lg ${iconBgColor}`}>
-          <Icon size={20} className={iconColor} />
+        <div className={`p-2 sm:p-3 rounded-lg ${iconBgColor} flex-shrink-0 ml-2`}>
+          <Icon size={16} className={`${iconColor} sm:w-5 sm:h-5 md:w-6 md:h-6`} />
         </div>
       </div>
     </motion.div>
