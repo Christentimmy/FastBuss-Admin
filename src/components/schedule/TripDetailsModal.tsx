@@ -45,22 +45,21 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
         }
 
         // Fetch trip details
-        const tripResponse = await tripHistoryService.getTripDetails(token, tripId);
+        const tripResponse = await tripHistoryService.getTripDetails(tripId);
         setTripDetails(tripResponse.data);
 
-        // Fetch locations
-        const [originData, destinationData] = await Promise.all([
-          tripHistoryService.getLocationData(tripResponse.data.route.origin),
-          tripHistoryService.getLocationData(tripResponse.data.route.destination)
-        ]);
+        // Fetch locations with error handling
+        try {
+          const [originData, destinationData] = await Promise.all([
+            tripHistoryService.getLocationData(tripResponse.data.route.origin),
+            tripHistoryService.getLocationData(tripResponse.data.route.destination)
+          ]);
 
-        // Check if we got valid location data
-        if (Array.isArray(originData) && Array.isArray(destinationData) && 
-            originData.length > 0 && destinationData.length > 0) {
-          const origin = originData[0];
-          const destination = destinationData[0];
-          
-          if (origin.lat && origin.lon && destination.lat && destination.lon) {
+          if (Array.isArray(originData) && Array.isArray(destinationData) && 
+              originData.length > 0 && destinationData.length > 0) {
+            const origin = originData[0];
+            const destination = destinationData[0];
+            
             setOriginLocation({
               lat: parseFloat(origin.lat.toString()),
               lon: parseFloat(origin.lon.toString()),
@@ -73,11 +72,11 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
             });
             setIsLocationsValid(true);
           } else {
-            console.error('Invalid location data:', { origin, destination });
+            console.warn('No location data found, using fallback coordinates');
             setIsLocationsValid(false);
           }
-        } else {
-          console.error('No location data found:', { originData, destinationData });
+        } catch (locationError) {
+          console.warn('Error fetching locations:', locationError);
           setIsLocationsValid(false);
         }
       } catch (err) {
@@ -146,9 +145,9 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Map Section */}
-          <div className="h-[500px] rounded-lg overflow-hidden relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[80vh]">
+          {/* Map Section - Fixed */}
+          <div className="h-full rounded-lg overflow-hidden relative">
             {isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
@@ -190,8 +189,8 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
             )}
           </div>
 
-          {/* Details Section */}
-          <div className="space-y-6">
+          {/* Details Section - Scrollable */}
+          <div className="space-y-6 overflow-y-auto pr-4">
             {tripDetails && (
               <>
                 {/* Route Details */}
@@ -211,6 +210,31 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
                     <span className="text-sm">Price: Rp {tripDetails.route.price.toLocaleString()}</span>
                   </div>
                 </div>
+
+                {/* Stops Details */}
+                {tripDetails.stops && tripDetails.stops.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-white">Stops</h3>
+                    <div className="space-y-3">
+                      {tripDetails.stops.map((stop) => (
+                        <div key={stop._id} className="bg-gray-800/50 p-3 rounded-lg">
+                          <div className="flex items-center gap-2 text-gray-400 mb-2">
+                            <MapPin size={16} />
+                            <span className="text-sm font-medium">{stop.location}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <Clock size={16} />
+                            <span className="text-sm">Arrival: {formatTime(stop.arrivalTime)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <Clock size={16} />
+                            <span className="text-sm">Departure: {formatTime(stop.departureTime)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Schedule Details */}
                 <div className="space-y-2">

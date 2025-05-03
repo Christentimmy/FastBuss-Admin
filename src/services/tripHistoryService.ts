@@ -3,9 +3,11 @@ import { authService } from './authService';
 
 export interface TripHistory {
   _id: string;
+  driverId: string | null;
   routeName: string;
   busName: string;
   busId: string;
+  stops: number;
   driverName: string;
   departureTime: string;
   origin: string;
@@ -57,7 +59,7 @@ export interface CreateScheduleRequest {
   driverId: string;
   departureTime: string;
   arrivalTime: string;
-      stops: {
+  stops: {
     location: string;
     arrivalTime: string;
     departureTime: string;
@@ -69,6 +71,12 @@ export interface TripDetails {
   status: string;
   departureTime: string;
   arrivalTime: string;
+  stops: {
+    location: string;
+    arrivalTime: string;
+    departureTime: string;
+    _id: string;
+  }[];
   route: {
     name: string;
     origin: string;
@@ -99,7 +107,9 @@ export interface TripDetailsResponse {
 }
 
 export const tripHistoryService = {
-  async getTripHistory(token: string): Promise<TripHistoryResponse> {
+ 
+  async getTripHistory(): Promise<TripHistoryResponse> {
+    const token = authService.getToken();
     try {
       const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-history`, {
         method: 'GET',
@@ -125,7 +135,8 @@ export const tripHistoryService = {
     }
   },
 
-  async getAllRoutes(token: string): Promise<RoutesResponse> {
+  async getAllRoutes(): Promise<RoutesResponse> {
+    const token = authService.getToken();
     try {
       const response = await fetch(`${BASE_URL}/sub-company/staff/all-routes`, {
         method: 'GET',
@@ -151,7 +162,8 @@ export const tripHistoryService = {
     }
   },
 
-  async getAvailableDrivers(token: string): Promise<DriversResponse> {
+  async getAvailableDrivers(): Promise<DriversResponse> {
+    const token = authService.getToken();
     try {
       const response = await fetch(`${BASE_URL}/sub-company/staff/available-drivers`, {
         method: 'GET',
@@ -188,23 +200,26 @@ export const tripHistoryService = {
         body: JSON.stringify(scheduleData),
       });
 
+      const data = await response.json();
+
       if (authService.handleTokenExpiration(response)) {
         throw new Error('Token expired');
       }
 
       if (!response.ok) {
-        throw new Error('Failed to create schedule');
+        throw new Error(data.message || 'Failed to create schedule');
       }
 
-      const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error creating schedule:', error);
+      console.error('Error in createSchedule:', error);
       throw error;
     }
   },
 
-  async getTripDetails(token: string, tripId: string): Promise<TripDetailsResponse> {
+  async getTripDetails(tripId: string) {
+    console.log('Trip ID:', tripId);
+    const token = authService.getToken();
     try {
       const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-details/${tripId}`, {
         headers: {
@@ -236,14 +251,25 @@ export const tripHistoryService = {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch location data');
+        if (response.status === 429) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return this.getLocationData(location);
+        }
+        throw new Error(`Failed to fetch location data: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('No location data found');
+      }
       return data;
     } catch (error) {
-      console.error('Error fetching location data:', error);
-      throw error;
+      console.error('Error fetching location data for location:', location, error);
+      return [{
+        lat: 0,
+        lon: 0,
+        display_name: location
+      }];
     }
   },
 

@@ -13,7 +13,8 @@ import {
   Timer,
   Map,
   User,
-  X
+  X,
+  MapPin
 } from 'lucide-react';
 import { 
   tripHistoryService, 
@@ -28,6 +29,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../styles/datepicker.css";
 import TripDetailsModal from '../components/schedule/TripDetailsModal';
 import EditTripModal from '../components/schedule/EditTripModal';
+import LocationInput from '../components/common/LocationInput';
 
 const ScheduleManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,7 +49,8 @@ const ScheduleManagement = () => {
     routeId: '',
     driverId: '',
     departureTime: '',
-    arrivalTime: ''
+    arrivalTime: '',
+    stops: []
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -73,9 +76,9 @@ const ScheduleManagement = () => {
         }
 
         const [schedulesResponse, routesResponse, driversResponse] = await Promise.all([
-          tripHistoryService.getTripHistory(token),
-          tripHistoryService.getAllRoutes(token),
-          tripHistoryService.getAvailableDrivers(token)
+          tripHistoryService.getTripHistory(),
+          tripHistoryService.getAllRoutes(),
+          tripHistoryService.getAvailableDrivers()
         ]);
 
         setSchedules(schedulesResponse.data);
@@ -107,8 +110,8 @@ const ScheduleManagement = () => {
         }
 
         const [routesResponse, driversResponse] = await Promise.all([
-          tripHistoryService.getAllRoutes(token),
-          tripHistoryService.getAvailableDrivers(token)
+          tripHistoryService.getAllRoutes(),
+          tripHistoryService.getAvailableDrivers()
         ]);
 
         setRoutes(routesResponse.data);
@@ -133,6 +136,36 @@ const ScheduleManagement = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const addStop = () => {
+    setFormData(prev => ({
+      ...prev,
+      stops: [
+        ...prev.stops,
+        {
+          location: '',
+          arrivalTime: '',
+          departureTime: ''
+        }
+      ]
+    }));
+  };
+
+  const removeStop = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      stops: prev.stops.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateStop = (index: number, field: 'location' | 'arrivalTime' | 'departureTime', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      stops: prev.stops.map((stop, i) => 
+        i === index ? { ...stop, [field]: value } : stop
+      )
+    }));
+  };
+
   const handleCreateSchedule = async () => {
     if (isCreating) return; // Prevent double-clicking
     
@@ -151,10 +184,23 @@ const ScheduleManagement = () => {
         return;
       }
 
-      await tripHistoryService.createSchedule(token, formData);
+      // Format the data for submission
+      const scheduleData = {
+        routeId: formData.routeId,
+        driverId: formData.driverId,
+        departureTime: new Date(formData.departureTime).toISOString(),
+        arrivalTime: new Date(formData.arrivalTime).toISOString(),
+        stops: formData.stops.map(stop => ({
+          location: stop.location,
+          arrivalTime: new Date(stop.arrivalTime).toISOString(),
+          departureTime: new Date(stop.departureTime).toISOString()
+        }))
+      };
+
+      await tripHistoryService.createSchedule(token, scheduleData);
       
       // Refresh schedules
-      const response = await tripHistoryService.getTripHistory(token);
+      const response = await tripHistoryService.getTripHistory();
       setSchedules(response.data);
       
       // Reset form
@@ -162,7 +208,8 @@ const ScheduleManagement = () => {
         routeId: '',
         driverId: '',
         departureTime: '',
-        arrivalTime: ''
+        arrivalTime: '',
+        stops: []
       });
       setShowNewScheduleForm(false);
     } catch (err) {
@@ -232,14 +279,13 @@ const ScheduleManagement = () => {
       id: trip._id,
       departureTime: trip.departureTime,
       arrivalTime: trip.arrivalTime,
-      driverId: trip.driverId
+      driverId: trip.driverId || ''
     });
   };
 
   const handleTripUpdate = async () => {
     try {
-      const token = await authService.getToken();
-      const response = await tripHistoryService.getTripHistory(token);
+      const response = await tripHistoryService.getTripHistory();
       setSchedules(response.data);
     } catch (err) {
       console.error('Error refreshing trips:', err);
@@ -322,7 +368,7 @@ const ScheduleManagement = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-gray-900 rounded-lg p-4 sm:p-6 w-full max-w-md"
+              className="bg-gray-900 rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col"
             >
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-semibold text-white">Create New Schedule</h2>
@@ -345,7 +391,7 @@ const ScheduleManagement = () => {
                   <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary-500"></div>
                 </div>
               ) : (
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                       Route
@@ -412,6 +458,69 @@ const ScheduleManagement = () => {
                       timeIntervals={15}
                       showPopperArrow={false}
                     />
+                  </div>
+
+                  {/* Stops Section */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-400">
+                        Stops
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addStop}
+                        className="flex items-center gap-1.5 text-primary-400 hover:text-primary-300 text-xs sm:text-sm"
+                      >
+                        <Plus size={14} className="sm:w-4 sm:h-4" />
+                        Add Stop
+                      </button>
+                    </div>
+
+                    {formData.stops.map((stop, index) => (
+                      <div key={index} className="space-y-2 p-3 sm:p-4 bg-gray-800/50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-xs sm:text-sm font-medium text-gray-400">Stop {index + 1}</h3>
+                          <button
+                            type="button"
+                            onClick={() => removeStop(index)}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            <X size={14} className="sm:w-4 sm:h-4" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <LocationInput
+                            value={stop.location}
+                            onChange={(value) => updateStop(index, 'location', value)}
+                            placeholder="Enter location"
+                            className="w-full"
+                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <DatePicker
+                              selected={stop.arrivalTime ? new Date(stop.arrivalTime) : null}
+                              onChange={(date: Date | null) => updateStop(index, 'arrivalTime', date?.toISOString() || '')}
+                              showTimeSelect
+                              dateFormat="h:mm aa"
+                              placeholderText="Arrival Time"
+                              className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              timeIntervals={15}
+                              required
+                            />
+                            <DatePicker
+                              selected={stop.departureTime ? new Date(stop.departureTime) : null}
+                              onChange={(date: Date | null) => updateStop(index, 'departureTime', date?.toISOString() || '')}
+                              showTimeSelect
+                              dateFormat="h:mm aa"
+                              placeholderText="Departure Time"
+                              className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              timeIntervals={15}
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="flex justify-end gap-2 sm:gap-3 mt-4 sm:mt-6">
@@ -634,6 +743,15 @@ const ScheduleManagement = () => {
                           <span className="text-xs sm:text-sm">Route: {schedule.origin} → {schedule.destination}</span>
                         </div>
 
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <Map size={14} />
+                          <span className="text-xs sm:text-sm">{schedule.origin} → {schedule.destination}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <MapPin size={14} />
+                          <span className="text-xs sm:text-sm">{schedule.stops} stops</span>
+                        </div>
+
                         <div className="flex justify-end gap-2">
                           <button className="btn-secondary text-xs sm:text-sm">View Details</button>
                           <button 
@@ -692,6 +810,10 @@ const ScheduleManagement = () => {
                   <div className="flex items-center gap-2 text-gray-400">
                     <Map size={14} />
                     <span className="text-xs sm:text-sm">{schedule.origin} → {schedule.destination}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <MapPin size={14} />
+                    <span className="text-xs sm:text-sm">{schedule.stops} stops</span>
                   </div>
                 </div>
 
