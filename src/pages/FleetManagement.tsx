@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Plus, X, Settings, Bus as BusIcon, Loader2 } from 'lucide-react';
+import { Search, Filter, Plus, X, Bus as BusIcon, Loader2 } from 'lucide-react';
 import { Bus } from '../services/busService';
 import BusStatusCard from '../components/dashboard/BusStatusCard';
 import AddBusForm from '../components/fleet/AddBusForm';
@@ -60,20 +60,21 @@ const FleetManagement = () => {
     setSelectedBus(bus);
   };
 
-  const handleStatusChange = async (action: 'activate' | 'block' | 'delete') => {
+  const handleStatusChange = async (action: 'activate' | 'block' | 'delete' | 'maintenance' | 'backFromMaintenance') => {
     if (!selectedBus) return;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      let updatedBus: Bus;
       switch (action) {
         case 'activate':
-          updatedBus = await busService.activateBus(selectedBus._id);
           break;
         case 'block':
-          updatedBus = await busService.deactivateBus(selectedBus._id);
+          break;
+        case 'maintenance':
+          break;
+        case 'backFromMaintenance':
           break;
         case 'delete':
           await busService.deleteBus(selectedBus._id);

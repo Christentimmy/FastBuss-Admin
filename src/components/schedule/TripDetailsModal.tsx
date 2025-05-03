@@ -4,7 +4,7 @@ import { X, MapPin, Clock, Bus, User, AlertCircle } from 'lucide-react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { BASE_URL } from '../../services/config';
+import { tripHistoryService, TripDetails, Location } from '../../services/tripHistoryService';
 import { authService } from '../../services/authService';
 
 // Fix for default marker icons
@@ -25,36 +25,6 @@ interface TripDetailsModalProps {
   onClose: () => void;
 }
 
-interface TripDetails {
-  tripId: string;
-  status: string;
-  departureTime: string;
-  arrivalTime: string;
-  route: {
-    name: string;
-    origin: string;
-    destination: string;
-    distance: number;
-    price: number;
-  };
-  bus: {
-    name: string;
-    plateNumber: string;
-    type: string;
-    capacity: number;
-  };
-  driver: {
-    name: string;
-    phone: string;
-  };
-}
-
-interface Location {
-  lat: number;
-  lon: number;
-  display_name: string;
-}
-
 const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,51 +39,20 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
         setIsLoading(true);
         setError(null);
 
-        const TOKEN = await authService.getToken();
-
-        // Fetch trip details
-        const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-details/${tripId}`, {
-          headers: {
-            'Authorization': `Bearer ${TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch trip details');
-        const data = await response.json();
-        setTripDetails(data.data);
-
-        console.log('Trip Details:', data.data);
-
-        // Fetch locations
-        const originUrl = `https://us1.locationiq.com/v1/search?key=${import.meta.env.VITE_LOCATIONIQ_API_KEY}&q=${encodeURIComponent(data.data.route.origin)}&format=json&limit=1`;
-        const destinationUrl = `https://us1.locationiq.com/v1/search?key=${import.meta.env.VITE_LOCATIONIQ_API_KEY}&q=${encodeURIComponent(data.data.route.destination)}&format=json&limit=1`;
-
-        console.log('Origin URL:', originUrl);
-        console.log('Destination URL:', destinationUrl);
-
-        const [originResponse, destinationResponse] = await Promise.all([
-          fetch(originUrl),
-          fetch(destinationUrl)
-        ]);
-
-        console.log('Origin Response Status:', originResponse.status);
-        console.log('Destination Response Status:', destinationResponse.status);
-
-        if (!originResponse.ok || !destinationResponse.ok) {
-          const originError = await originResponse.text();
-          const destinationError = await destinationResponse.text();
-          console.error('Origin Error:', originError);
-          console.error('Destination Error:', destinationError);
-          throw new Error('Failed to fetch location data');
+        const token = await authService.getToken();
+        if (!token) {
+          throw new Error('Authentication token not found');
         }
 
-        const [originData, destinationData] = await Promise.all([
-          originResponse.json(),
-          destinationResponse.json()
-        ]);
+        // Fetch trip details
+        const tripResponse = await tripHistoryService.getTripDetails(token, tripId);
+        setTripDetails(tripResponse.data);
 
-        console.log('Origin Data:', originData);
-        console.log('Destination Data:', destinationData);
+        // Fetch locations
+        const [originData, destinationData] = await Promise.all([
+          tripHistoryService.getLocationData(tripResponse.data.route.origin),
+          tripHistoryService.getLocationData(tripResponse.data.route.destination)
+        ]);
 
         // Check if we got valid location data
         if (Array.isArray(originData) && Array.isArray(destinationData) && 
@@ -123,14 +62,14 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
           
           if (origin.lat && origin.lon && destination.lat && destination.lon) {
             setOriginLocation({
-              lat: parseFloat(origin.lat),
-              lon: parseFloat(origin.lon),
-              display_name: origin.display_name || data.data.route.origin
+              lat: parseFloat(origin.lat.toString()),
+              lon: parseFloat(origin.lon.toString()),
+              display_name: origin.display_name || tripResponse.data.route.origin
             });
             setDestinationLocation({
-              lat: parseFloat(destination.lat),
-              lon: parseFloat(destination.lon),
-              display_name: destination.display_name || data.data.route.destination
+              lat: parseFloat(destination.lat.toString()),
+              lon: parseFloat(destination.lon.toString()),
+              display_name: destination.display_name || tripResponse.data.route.destination
             });
             setIsLocationsValid(true);
           } else {

@@ -57,6 +57,45 @@ export interface CreateScheduleRequest {
   driverId: string;
   departureTime: string;
   arrivalTime: string;
+      stops: {
+    location: string;
+    arrivalTime: string;
+    departureTime: string;
+  }[];
+}
+
+export interface TripDetails {
+  tripId: string;
+  status: string;
+  departureTime: string;
+  arrivalTime: string;
+  route: {
+    name: string;
+    origin: string;
+    destination: string;
+    distance: number;
+    price: number;
+  };
+  bus: {
+    name: string;
+    plateNumber: string;
+    type: string;
+    capacity: number;
+  };
+  driver: {
+    name: string;
+    phone: string;
+  };
+}
+
+export interface Location {
+  lat: number;
+  lon: number;
+  display_name: string;
+}
+
+export interface TripDetailsResponse {
+  data: TripDetails;
 }
 
 export const tripHistoryService = {
@@ -161,6 +200,92 @@ export const tripHistoryService = {
       return data;
     } catch (error) {
       console.error('Error creating schedule:', error);
+      throw error;
+    }
+  },
+
+  async getTripDetails(token: string, tripId: string): Promise<TripDetailsResponse> {
+    try {
+      const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-details/${tripId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch trip details');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching trip details:', error);
+      throw error;
+    }
+  },
+
+  async getLocationData(location: string): Promise<Location[]> {
+    try {
+      const response = await fetch(
+        `https://us1.locationiq.com/v1/search?key=${import.meta.env.VITE_LOCATIONIQ_API_KEY}&q=${encodeURIComponent(location)}&format=json&limit=1`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch location data');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching location data:', error);
+      throw error;
+    }
+  },
+
+  async updateTrip(
+    token: string, 
+    tripId: string, 
+    data: {
+      departureTime: string;
+      arrivalTime: string;
+      driverId: string;
+      stops: {
+        location: string;
+        arrivalTime: string;
+        departureTime: string;
+      }[];
+    }
+  ): Promise<any> {
+    try {
+      const response = await fetch(`${BASE_URL}/sub-company/update-trip`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tripId,
+          ...data
+        }),
+      });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to update trip');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error updating trip:', error);
       throw error;
     }
   }

@@ -7,7 +7,7 @@ import ShimmerEffect from '../common/ShimmerEffect';
 interface BusDetailsModalProps {
   bus: BusType;
   onClose: () => void;
-  onStatusChange: (action: 'activate' | 'block' | 'delete') => void;
+  onStatusChange: (action: 'activate' | 'block' | 'delete' | 'maintenance' | 'backFromMaintenance') => void;
   isLoading: boolean;
 }
 
@@ -34,7 +34,7 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
     fetchBusDetails();
   }, [bus._id]);
 
-  const handleAction = async (action: 'activate' | 'block' | 'delete') => {
+  const handleAction = async (action: 'activate' | 'block' | 'delete' | 'maintenance' | 'backFromMaintenance') => {
     setLoadingAction(action);
     try {
       await onStatusChange(action);
@@ -245,13 +245,14 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
             )}
 
             {/* Status Management */}
-            <div className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-700">
+            <div className="glass-card p-3 sm:p-4 rounded-lg">
               <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
                 <Settings size={16} className="mr-1.5 sm:mr-2 text-primary-400 sm:w-[18px] sm:h-[18px]" />
                 Bus Management
               </h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
-                {bus.status !== 'active' && (
+                {/* Show Activate button when status is blocked */}
+                {bus.status === 'blocked' && (
                   <button
                     onClick={() => handleAction('activate')}
                     disabled={loadingAction !== null}
@@ -265,7 +266,8 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
                   </button>
                 )}
                 
-                {bus.status !== 'inactive' && (
+                {/* Show Deactivate button when status is active or inactive */}
+                {(bus.status === 'active' || bus.status === 'inactive') && (
                   <button
                     onClick={() => handleAction('block')}
                     disabled={loadingAction !== null}
@@ -278,7 +280,38 @@ const BusDetailsModal: React.FC<BusDetailsModalProps> = ({ bus, onClose, onStatu
                     )}
                   </button>
                 )}
+
+                {/* Show Maintenance button for all statuses except maintenance */}
+                {bus.status !== 'maintenance' && (
+                  <button
+                    onClick={() => handleAction('maintenance')}
+                    disabled={loadingAction !== null}
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-xs sm:text-sm transition-colors disabled:opacity-50 flex items-center gap-1 sm:gap-2"
+                  >
+                    {loadingAction === 'maintenance' ? (
+                      <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> Updating...</>
+                    ) : (
+                      'Send to Maintenance'
+                    )}
+                  </button>
+                )}
+
+                {/* Show Back from Maintenance button when status is maintenance */}
+                {bus.status === 'maintenance' && (
+                  <button
+                    onClick={() => handleAction('backFromMaintenance')}
+                    disabled={loadingAction !== null}
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-xs sm:text-sm transition-colors disabled:opacity-50 flex items-center gap-1 sm:gap-2"
+                  >
+                    {loadingAction === 'backFromMaintenance' ? (
+                      <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> Updating...</>
+                    ) : (
+                      'Back from Maintenance'
+                    )}
+                  </button>
+                )}
                 
+                {/* Delete button is always available */}
                 <button
                   onClick={() => handleAction('delete')}
                   disabled={loadingAction !== null}

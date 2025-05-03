@@ -203,5 +203,45 @@ export const busService = {
       console.error('Error fetching bus details:', error);
       throw error;
     }
+  },
+
+  setMaintenance: async (busId: string): Promise<Bus> => {
+    const response = await fetch(`${BASE_URL}/sub-company/bus-maintenance/${busId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (authService.handleTokenExpiration(response)) {
+      throw new Error('Token expired');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to set bus to maintenance');
+    }
+
+    return await response.json();
+  },
+
+  removeMaintenance: async (busId: string): Promise<Bus> => {
+    const response = await fetch(`${BASE_URL}/sub-company/bus-back-from-maintenance/${busId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (authService.handleTokenExpiration(response)) {
+      throw new Error('Token expired');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to remove bus from maintenance');
+    }
+
+    return await response.json();
   }
 }; 
