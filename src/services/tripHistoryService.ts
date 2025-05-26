@@ -110,6 +110,7 @@ export const tripHistoryService = {
  
   async getTripHistory(): Promise<TripHistoryResponse> {
     const token = authService.getToken();
+    
     try {
       const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-history`, {
         method: 'GET',
