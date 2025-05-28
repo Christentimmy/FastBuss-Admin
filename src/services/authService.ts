@@ -114,7 +114,7 @@ export const authService = {
 
     try {
       const response = await fetch(`${BASE_URL}/auth/check-token`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -163,23 +163,28 @@ export const authService = {
   },
 
   async getUserProfile(): Promise<UserProfile> {
-    const token = authService.getToken();
+    const token = this.getToken();
     if (!token) {
       throw new Error('No token found');
     }
 
+    console.log(`${BASE_URL}/sub-company/staff/get-admin-details`);
+    console.log(token);
+
     const response = await fetch(`${BASE_URL}/sub-company/staff/get-admin-details`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
     });
+    
+    const data = await response.json();
+    console.log("Fetch Profile:", response.status);
 
     if (!response.ok) {
       throw new Error('Failed to fetch user profile');
     }
-
-    const data = await response.json();
     return data.data;
   }
 }; 
