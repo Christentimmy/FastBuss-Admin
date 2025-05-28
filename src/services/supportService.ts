@@ -40,7 +40,8 @@ class SupportService {
     try {
       const response = await axios.get<SupportTicketResponse>(`${this.API_URL}/all-tickets`, {
         headers: {
-          Authorization: `Bearer ${TOKEN}`
+          Authorization: `Bearer ${TOKEN}`,
+          "Content-Type": "application/json"
         }
       });
       return response.data.data;

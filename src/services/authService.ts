@@ -168,9 +168,6 @@ export const authService = {
       throw new Error('No token found');
     }
 
-    console.log(`${BASE_URL}/sub-company/staff/get-admin-details`);
-    console.log(token);
-
     const response = await fetch(`${BASE_URL}/sub-company/staff/get-admin-details`, {
       method: 'GET',
       headers: {
