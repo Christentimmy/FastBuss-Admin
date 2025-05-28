@@ -12,6 +12,7 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import CompaniesManagement from './pages/CompaniesManagement';
 import StaffManagement from './pages/StaffManagement';
+import SupportTickets from './pages/SupportTickets';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import AppInitializer from './components/auth/AppInitializer';
@@ -99,6 +100,11 @@ const App = () => {
           <Route path="/staff" element={
             <AuthenticatedLayout>
               <StaffManagement />
+            </AuthenticatedLayout>
+          } />
+          <Route path="/support" element={
+            <AuthenticatedLayout>
+              <SupportTickets />
             </AuthenticatedLayout>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />

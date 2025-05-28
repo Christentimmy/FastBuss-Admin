@@ -12,7 +12,8 @@ import {
   LogOut,
   Building2,
   UserCog,
-  Loader2
+  Loader2,
+  Headphones
 } from 'lucide-react';
 import { authService } from '../../services/authService';
 import Avatar from '../common/Avatar';
@@ -92,6 +93,7 @@ const Sidebar = () => {
     { id: '/drivers', icon: <Users size={20} />, label: 'Drivers' },
     { id: '/routes', icon: <Route size={20} />, label: 'Routes' },
     { id: '/schedule', icon: <CalendarClock size={20} />, label: 'Schedule' },
+    { id: '/support', icon: <Headphones size={20} />, label: 'Support Tickets' },
     // { id: '/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
     ...(userRole === 'super_admin' ? [{ id: '/companies', icon: <Building2 size={20} />, label: 'Companies' }] : []),
     ...(userRole && ['super_admin', 'sub_admin'].includes(userRole) ? [
