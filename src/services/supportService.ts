@@ -107,7 +107,8 @@ class SupportService {
         { ticketId, status, priority },
         {
           headers: {
-            Authorization: `Bearer ${TOKEN}`
+            "Authorization": `Bearer ${TOKEN}`,
+            "Content-Type": "application/json"
           }
         }
       );
