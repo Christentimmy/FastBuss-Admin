@@ -29,6 +29,7 @@ interface UserProfile {
 
 export const authService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
+
     try {
       const response = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
@@ -39,6 +40,7 @@ export const authService = {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (!response.ok) {
         throw {
@@ -85,7 +87,7 @@ export const authService = {
       // Decode token to check expiration
       const payload = JSON.parse(atob(token.split('.')[1])) as TokenPayload;
       const currentTime = Math.floor(Date.now() / 1000);
-      
+
       return payload.exp > currentTime;
     } catch {
       return false;
@@ -175,9 +177,8 @@ export const authService = {
         'Content-Type': 'application/json'
       },
     });
-    
+
     const data = await response.json();
-    console.log("Fetch Profile:", response.status);
 
     if (!response.ok) {
       throw new Error('Failed to fetch user profile');

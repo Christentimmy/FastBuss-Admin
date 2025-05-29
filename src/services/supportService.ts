@@ -36,6 +36,14 @@ export interface SupportTicketResponse {
 class SupportService {
   private API_URL = `${BASE_URL}/support`;
 
+  private handleError(error: any): never {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.message || error.message;
+      throw new Error(`Support service error: ${message}`);
+    }
+    throw new Error('An unexpected error occurred');
+  }
+
   async getMyTickets(): Promise<SupportTicket[]> {
     try {
       const response = await axios.get<SupportTicketResponse>(`${this.API_URL}/all-tickets`, {
@@ -46,8 +54,7 @@ class SupportService {
       });
       return response.data.data;
     } catch (error) {
-      console.error('Error fetching tickets:', error);
-      throw error;
+      this.handleError(error);
     }
   }
 
@@ -63,8 +70,7 @@ class SupportService {
       );
       return response.data.data;
     } catch (error) {
-      console.error('Error fetching ticket:', error);
-      throw error;
+      this.handleError(error);
     }
   }
 
@@ -86,8 +92,7 @@ class SupportService {
       );
       return response.data.data;
     } catch (error) {
-      console.error('Error creating ticket:', error);
-      throw error;
+      this.handleError(error);
     }
   }
 
@@ -107,8 +112,7 @@ class SupportService {
         }
       );
     } catch (error) {
-      console.error('Error updating ticket:', error);
-      throw error;
+      this.handleError(error);
     }
   }
 }
