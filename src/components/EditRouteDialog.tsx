@@ -24,7 +24,8 @@ interface RouteFormData {
     lon: number;
   } | null;
   distance: number | null;
-  price: string;
+  adultPrice: string;
+  childPrice: string;
   status: 'active' | 'inactive' | 'modified';
 }
 
@@ -34,7 +35,8 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
     origin: null,
     destination: null,
     distance: route.distance,
-    price: route.price.toString(),
+    adultPrice: route.adultPrice.toString(),
+    childPrice: route.childPrice.toString(),
     status: route.status
   });
 
@@ -53,7 +55,8 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
         origin: null,
         destination: null,
         distance: route.distance,
-        price: route.price.toString(),
+        adultPrice: route.adultPrice.toString(),
+        childPrice: route.childPrice.toString(),
         status: route.status
       });
       setOriginInput(route.origin);
@@ -124,7 +127,8 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
         origin: formData.origin ? formData.origin.display_name : undefined,
         destination: formData.destination ? formData.destination.display_name : undefined,
         distance: formData.distance !== route.distance ? formData.distance : undefined,
-        price: parseFloat(formData.price) !== route.price ? parseFloat(formData.price) : undefined,
+        adultPrice: parseFloat(formData.adultPrice) !== route.adultPrice ? parseFloat(formData.adultPrice) : undefined,
+        childPrice: parseFloat(formData.childPrice) !== route.childPrice ? parseFloat(formData.childPrice) : undefined,
         status: formData.status !== route.status ? formData.status : undefined
       };
 
@@ -263,11 +267,24 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Price (€)</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Adult Price (€)</label>
               <input
                 type="number"
-                value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                value={formData.adultPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, adultPrice: e.target.value }))}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Child Price (€)</label>
+              <input
+                type="number"
+                value={formData.childPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, childPrice: e.target.value }))}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
                 min="0"

@@ -7,7 +7,8 @@ export interface Route {
   origin: string;
   destination: string;
   distance: number;
-  price: number;
+  adultPrice: number;
+  childPrice: number;
   status: 'active' | 'inactive' | 'modified';
   waypoints?: string[];
   createdAt: string;
@@ -19,7 +20,8 @@ export interface CreateRouteData {
   origin: string;
   destination: string;
   distance: number;
-  price: number;
+  adultPrice: number;
+  childPrice: number;
 }
 
 export interface RoutesResponse {
@@ -41,7 +43,8 @@ export interface UpdateRouteData {
   origin?: string;
   destination?: string;
   distance?: number;
-  price?: number;
+  adultPrice?: number;
+  childPrice?: number;
   status?: 'active' | 'inactive' | 'modified';
 }
 

@@ -291,7 +291,9 @@ const RoutesManagement = () => {
                       <div className="text-sm text-gray-400">
                         <span className="text-gray-500">Dist:</span> {route.distance} km
                         <span className="mx-2">•</span>
-                        <span className="text-gray-500">Price:</span> € {route.price.toLocaleString()}
+                        <span className="text-gray-500">Adult:</span> € {route.adultPrice.toLocaleString()}
+                        <span className="mx-2">•</span>
+                        <span className="text-gray-500">Child:</span> € {route.childPrice.toLocaleString()}
                       </div>
                       <div className="flex items-center gap-1">
                         {route.status === 'active' ? (
@@ -361,7 +363,8 @@ const RoutesManagement = () => {
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Origin</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Destination</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Distance</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Price</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Adult Price</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Child Price</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Actions</th>
                     </tr>
@@ -369,7 +372,7 @@ const RoutesManagement = () => {
                   <tbody className="divide-y divide-gray-800">
                     {filteredRoutes.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-4 py-6 text-center text-gray-400">
+                        <td colSpan={8} className="px-4 py-6 text-center text-gray-400">
                           No routes found. Try adjusting your search or create a new route.
                         </td>
                       </tr>
@@ -390,7 +393,8 @@ const RoutesManagement = () => {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-gray-400">{route.distance} km</td>
-                          <td className="px-4 py-3 text-gray-400 whitespace-nowrap">€ {route.price.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-gray-400 whitespace-nowrap">€ {route.adultPrice.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-gray-400 whitespace-nowrap">€ {route.childPrice.toLocaleString()}</td>
                           <td className="px-4 py-3">
                             <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                               route.status === 'active' ? 'bg-success-900/60 text-success-400' :

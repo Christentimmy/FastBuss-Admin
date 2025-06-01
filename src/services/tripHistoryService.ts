@@ -82,7 +82,8 @@ export interface TripDetails {
     origin: string;
     destination: string;
     distance: number;
-    price: number;
+    adultPrice: number;
+    childPrice: number;
   };
   bus: {
     name: string;

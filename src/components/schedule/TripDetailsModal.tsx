@@ -207,7 +207,10 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
                     <span className="text-sm">Distance: {tripDetails.route.distance}km</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Price: Rp {tripDetails.route.price.toLocaleString()}</span>
+                    <span className="text-sm">Adult Price: € {tripDetails.route.adultPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <span className="text-sm">Child Price: € {tripDetails.route.childPrice.toLocaleString()}</span>
                   </div>
                 </div>
 

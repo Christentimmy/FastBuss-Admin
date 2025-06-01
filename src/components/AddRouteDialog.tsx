@@ -23,7 +23,8 @@ interface RouteFormData {
     lon: number;
   } | null;
   distance: number | null;
-  price: string;
+  adultPrice: string;
+  childPrice: string;
 }
 
 export const AddRouteDialog: React.FC<AddRouteDialogProps> = ({ isOpen, onClose, onRouteAdded }) => {
@@ -32,7 +33,8 @@ export const AddRouteDialog: React.FC<AddRouteDialogProps> = ({ isOpen, onClose,
     origin: null,
     destination: null,
     distance: null,
-    price: ''
+    adultPrice: '',
+    childPrice: ''
   });
 
   const [originInput, setOriginInput] = useState('');
@@ -106,7 +108,8 @@ export const AddRouteDialog: React.FC<AddRouteDialogProps> = ({ isOpen, onClose,
         origin: formData.origin!.display_name,
         destination: formData.destination!.display_name,
         distance: formData.distance!,
-        price: parseFloat(formData.price)
+        adultPrice: parseFloat(formData.adultPrice),
+        childPrice: parseFloat(formData.childPrice)
       });
 
       onRouteAdded();
@@ -243,11 +246,24 @@ export const AddRouteDialog: React.FC<AddRouteDialogProps> = ({ isOpen, onClose,
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Price (€)</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Adult Price (€)</label>
               <input
                 type="number"
-                value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                value={formData.adultPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, adultPrice: e.target.value }))}
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Child Price (€)</label>
+              <input
+                type="number"
+                value={formData.childPrice}
+                onChange={(e) => setFormData(prev => ({ ...prev, childPrice: e.target.value }))}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
                 min="0"
