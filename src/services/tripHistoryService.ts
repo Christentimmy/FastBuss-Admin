@@ -220,7 +220,6 @@ export const tripHistoryService = {
   },
 
   async getTripDetails(tripId: string) {
-    console.log('Trip ID:', tripId);
     const token = authService.getToken();
     try {
       const response = await fetch(`${BASE_URL}/sub-company/staff/get-trip-details/${tripId}`, {
@@ -241,7 +240,7 @@ export const tripHistoryService = {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching trip details:', error);
+      console.error('Error fetching trip details');
       throw error;
     }
   },

@@ -2,8 +2,6 @@ import axios from 'axios';
 import { BASE_URL } from './config';
 import { authService } from './authService';
 
-const TOKEN = authService.getToken();
-
 // Types
 export interface SupportTicket {
   _id: string;
@@ -44,13 +42,21 @@ class SupportService {
     throw new Error('An unexpected error occurred');
   }
 
+  private getAuthHeaders() {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    return {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
   async getMyTickets(): Promise<SupportTicket[]> {
     try {
       const response = await axios.get<SupportTicketResponse>(`${this.API_URL}/all-tickets`, {
-        headers: {
-          Authorization: `Bearer ${TOKEN}`,
-          "Content-Type": "application/json"
-        }
+        headers: this.getAuthHeaders()
       });
       return response.data.data;
     } catch (error) {
@@ -63,9 +69,7 @@ class SupportService {
       const response = await axios.get<{ message: string; data: SupportTicket }>(
         `${this.API_URL}/tickets/${ticketId}`,
         {
-          headers: {
-            Authorization: `Bearer ${TOKEN}`
-          }
+          headers: this.getAuthHeaders()
         }
       );
       return response.data.data;
@@ -85,9 +89,7 @@ class SupportService {
         `${this.API_URL}/tickets`,
         ticketData,
         {
-          headers: {
-            Authorization: `Bearer ${TOKEN}`
-          }
+          headers: this.getAuthHeaders()
         }
       );
       return response.data.data;
@@ -106,10 +108,7 @@ class SupportService {
         `${this.API_URL}/update-status`,
         { ticketId, status, priority },
         {
-          headers: {
-            "Authorization": `Bearer ${TOKEN}`,
-            "Content-Type": "application/json"
-          }
+          headers: this.getAuthHeaders()
         }
       );
     } catch (error) {

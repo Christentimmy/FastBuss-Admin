@@ -6,12 +6,11 @@ class CompanyService {
     private baseUrl: string;
 
     constructor() {
-        this.baseUrl = `${BASE_URL}/super-admin`;
+        this.baseUrl = `${BASE_URL}/sub-company`;
     }
 
     async listCompanies(): Promise<Company[]> {
         const token = await authService.getToken();
-        console.log("all list companies called");
         const response = await fetch(`${this.baseUrl}/list-sub-companies`, {
             headers: {
                 'Authorization': `Bearer ${token}`,

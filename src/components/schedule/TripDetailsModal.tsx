@@ -6,6 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { tripHistoryService, TripDetails, Location } from '../../services/tripHistoryService';
 import { authService } from '../../services/authService';
+import { locationService } from '../../services/locationService';
 
 // Fix for default marker icons
 const defaultIcon = L.icon({
@@ -32,6 +33,7 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
   const [originLocation, setOriginLocation] = useState<Location | null>(null);
   const [destinationLocation, setDestinationLocation] = useState<Location | null>(null);
   const [isLocationsValid, setIsLocationsValid] = useState(true);
+  const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
     const fetchTripDetails = async () => {
@@ -45,14 +47,14 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
         }
 
         // Fetch trip details
-        const tripResponse = await tripHistoryService.getTripDetails(tripId);
-        setTripDetails(tripResponse.data);
+        const data = await tripHistoryService.getTripDetails(tripId);
+        setTripDetails(data.data);
 
         // Fetch locations with error handling
         try {
           const [originData, destinationData] = await Promise.all([
-            tripHistoryService.getLocationData(tripResponse.data.route.origin),
-            tripHistoryService.getLocationData(tripResponse.data.route.destination)
+            tripHistoryService.getLocationData(data.data.route.origin),
+            tripHistoryService.getLocationData(data.data.route.destination)
           ]);
 
           if (Array.isArray(originData) && Array.isArray(destinationData) && 
@@ -63,12 +65,12 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
             setOriginLocation({
               lat: parseFloat(origin.lat.toString()),
               lon: parseFloat(origin.lon.toString()),
-              display_name: origin.display_name || tripResponse.data.route.origin
+              display_name: origin.display_name || data.data.route.origin
             });
             setDestinationLocation({
               lat: parseFloat(destination.lat.toString()),
               lon: parseFloat(destination.lon.toString()),
-              display_name: destination.display_name || tripResponse.data.route.destination
+              display_name: destination.display_name || data.data.route.destination
             });
             setIsLocationsValid(true);
           } else {
@@ -80,8 +82,8 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
           setIsLocationsValid(false);
         }
       } catch (err) {
-        console.error('Error in fetchTripDetails:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load trip details');
+        console.error('Error fetching trip details');
+        setError('Failed to load trip details');
         setIsLocationsValid(false);
       } finally {
         setIsLoading(false);
@@ -90,6 +92,26 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
 
     fetchTripDetails();
   }, [tripId]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const locations = await Promise.all(
+          tripDetails?.stops.map(stop => 
+            locationService.searchLocations(stop)
+          ) || []
+        );
+        setLocations(locations);
+      } catch (locationError) {
+        console.error('Error fetching locations');
+        setError('Failed to load location data');
+      }
+    };
+
+    if (tripDetails) {
+      fetchLocations();
+    }
+  }, [tripDetails]);
 
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {

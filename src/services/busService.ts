@@ -1,6 +1,5 @@
 import { BASE_URL } from './config';
 import { authService } from './authService';
-const TOKEN = authService.getToken();
 
 export interface CreateBusData {
   name: string;
@@ -53,11 +52,16 @@ export interface BusDetailsResponse {
 export const busService = {
   createBus: async (busData: CreateBusData) => {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch(`${BASE_URL}/sub-company/create-bus`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${TOKEN}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(busData)
       });
@@ -81,9 +85,14 @@ export const busService = {
 
   fetchBuses: async (): Promise<BusResponse> => {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch(`${BASE_URL}/sub-company/staff/buses`, {
         headers: {
-          'Authorization': `Bearer ${TOKEN}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -105,9 +114,14 @@ export const busService = {
 
   fetchNoDriverBuses: async (): Promise<BusResponse> => {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch(`${BASE_URL}/sub-company/staff/no-driver-buses`, {
         headers: {
-          'Authorization': `Bearer ${TOKEN}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -127,10 +141,15 @@ export const busService = {
   },
 
   deactivateBus: async (busId: string): Promise<Bus> => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     const response = await fetch(`${BASE_URL}/sub-company/deactivate-bus/${busId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${TOKEN}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
@@ -147,10 +166,15 @@ export const busService = {
   },
 
   activateBus: async (busId: string): Promise<Bus> => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     const response = await fetch(`${BASE_URL}/sub-company/activate-bus/${busId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${TOKEN}`
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -166,10 +190,15 @@ export const busService = {
   },
 
   deleteBus: async (busId: string): Promise<void> => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     const response = await fetch(`${BASE_URL}/sub-company/delete-bus/${busId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${TOKEN}`
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -184,9 +213,14 @@ export const busService = {
 
   fetchBusDetails: async (busId: string): Promise<BusDetailsResponse> => {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch(`${BASE_URL}/sub-company/staff/bus-details/${busId}`, {
         headers: {
-          'Authorization': `Bearer ${TOKEN}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -206,10 +240,15 @@ export const busService = {
   },
 
   setMaintenance: async (busId: string): Promise<Bus> => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     const response = await fetch(`${BASE_URL}/sub-company/bus-maintenance/${busId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${TOKEN}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
@@ -226,10 +265,15 @@ export const busService = {
   },
 
   removeMaintenance: async (busId: string): Promise<Bus> => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     const response = await fetch(`${BASE_URL}/sub-company/bus-back-from-maintenance/${busId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${TOKEN}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
