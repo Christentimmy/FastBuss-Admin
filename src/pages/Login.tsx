@@ -22,9 +22,6 @@ const Login = () => {
       const response = await authService.login(email, password);
       
       if (response.token) {
-        // Store token in localStorage
-        localStorage.setItem('token', response.token);
-        
         // If remember me is checked, store email
         if (rememberMe) {
           localStorage.setItem('rememberedEmail', email);

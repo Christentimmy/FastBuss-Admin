@@ -23,11 +23,21 @@ const AppInitializer = () => {
           return;
         }
 
+        // Check if token is expired using isAuthenticated
+        if (!authService.isAuthenticated()) {
+          authService.removeToken();
+          navigate('/login');
+          return;
+        }
+
+        // Validate token with server
         const isValid = await authService.validateToken();
         if (!isValid) {
+          authService.removeToken();
           navigate('/login');
         }
       } catch (error) {
+        authService.removeToken();
         navigate('/login');
       } finally {
         setIsInitializing(false);
