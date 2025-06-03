@@ -97,15 +97,17 @@ export const busService = {
         }
       });
 
-      if (authService.handleTokenExpiration(response)) {
-        throw new Error('Token expired');
-      }
-
+      // if (authService.handleTokenExpiration(response)) {
+      //   throw new Error('Token expired');
+      // }
+      const data = await response.json();
+      console.log('data', data);
       if (!response.ok) {
         throw new Error('Failed to fetch buses');
       }
 
-      return await response.json();
+
+      return data;
     } catch (error) {
       console.error('Error fetching buses:', error);
       throw error;
