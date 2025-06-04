@@ -257,7 +257,7 @@ const ScheduleManagement = () => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: false
     });
   };
 
@@ -439,7 +439,8 @@ const ScheduleManagement = () => {
                       selected={formData.departureTime ? new Date(formData.departureTime) : null}
                       onChange={(date: Date | null) => setFormData({ ...formData, departureTime: date?.toISOString() || '' })}
                       showTimeSelect
-                      dateFormat="MMMM d, yyyy h:mm aa"
+                      dateFormat="MMMM d, yyyy HH:mm"
+                      timeFormat="HH:mm"
                       className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholderText="Select departure time"
                       timeIntervals={15}
@@ -455,7 +456,8 @@ const ScheduleManagement = () => {
                       selected={formData.arrivalTime ? new Date(formData.arrivalTime) : null}
                       onChange={(date: Date | null) => setFormData({ ...formData, arrivalTime: date?.toISOString() || '' })}
                       showTimeSelect
-                      dateFormat="MMMM d, yyyy h:mm aa"
+                      dateFormat="MMMM d, yyyy HH:mm"
+                      timeFormat="HH:mm"
                       className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholderText="Select arrival time"
                       timeIntervals={15}
@@ -504,7 +506,8 @@ const ScheduleManagement = () => {
                               selected={stop.arrivalTime ? new Date(stop.arrivalTime) : null}
                               onChange={(date: Date | null) => updateStop(index, 'arrivalTime', date?.toISOString() || '')}
                               showTimeSelect
-                              dateFormat="h:mm aa"
+                              dateFormat="HH:mm"
+                              timeFormat="HH:mm"
                               placeholderText="Arrival Time"
                               className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                               timeIntervals={15}
@@ -514,7 +517,8 @@ const ScheduleManagement = () => {
                               selected={stop.departureTime ? new Date(stop.departureTime) : null}
                               onChange={(date: Date | null) => updateStop(index, 'departureTime', date?.toISOString() || '')}
                               showTimeSelect
-                              dateFormat="h:mm aa"
+                              dateFormat="HH:mm"
+                              timeFormat="HH:mm"
                               placeholderText="Departure Time"
                               className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                               timeIntervals={15}

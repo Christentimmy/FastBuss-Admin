@@ -137,7 +137,8 @@ const EditTripModal = ({
               selected={departureTime}
               onChange={(date) => setDepartureTime(date)}
               showTimeSelect
-              dateFormat="MMMM d, yyyy h:mm aa"
+              dateFormat="MMMM d, yyyy HH:mm"
+              timeFormat="HH:mm"
               className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholderText="Select departure time"
             />
@@ -152,7 +153,8 @@ const EditTripModal = ({
               selected={arrivalTime}
               onChange={(date) => setArrivalTime(date)}
               showTimeSelect
-              dateFormat="MMMM d, yyyy h:mm aa"
+              dateFormat="MMMM d, yyyy HH:mm"
+              timeFormat="HH:mm"
               className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholderText="Select arrival time"
             />
