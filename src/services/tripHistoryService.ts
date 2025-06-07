@@ -59,6 +59,8 @@ export interface CreateScheduleRequest {
   driverId: string;
   departureTime: string;
   arrivalTime: string;
+  departureBusStation: string;
+  arrivalBusStation: string;
   stops: {
     location: string;
     arrivalTime: string;

@@ -50,6 +50,8 @@ const ScheduleManagement = () => {
     driverId: '',
     departureTime: '',
     arrivalTime: '',
+    departureBusStation: '',
+    arrivalBusStation: '',
     stops: []
   });
   const [formError, setFormError] = useState<string | null>(null);
@@ -179,7 +181,8 @@ const ScheduleManagement = () => {
       }
 
       // Validate form data
-      if (!formData.routeId || !formData.driverId || !formData.departureTime || !formData.arrivalTime) {
+      if (!formData.routeId || !formData.driverId || !formData.departureTime || !formData.arrivalTime || 
+          !formData.departureBusStation || !formData.arrivalBusStation) {
         setFormError('Please fill in all fields');
         return;
       }
@@ -190,6 +193,8 @@ const ScheduleManagement = () => {
         driverId: formData.driverId,
         departureTime: new Date(formData.departureTime).toISOString(),
         arrivalTime: new Date(formData.arrivalTime).toISOString(),
+        departureBusStation: formData.departureBusStation,
+        arrivalBusStation: formData.arrivalBusStation,
         stops: formData.stops.map(stop => ({
           location: stop.location,
           arrivalTime: new Date(stop.arrivalTime).toISOString(),
@@ -209,6 +214,8 @@ const ScheduleManagement = () => {
         driverId: '',
         departureTime: '',
         arrivalTime: '',
+        departureBusStation: '',
+        arrivalBusStation: '',
         stops: []
       });
       setShowNewScheduleForm(false);
@@ -370,30 +377,30 @@ const ScheduleManagement = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-gray-900 rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+              className="bg-gray-900 rounded-lg p-3 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-4"
             >
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Create New Schedule</h2>
+              <div className="flex items-center justify-between mb-3 sm:mb-6">
+                <h2 className="text-base sm:text-xl font-semibold text-white">Create New Schedule</h2>
                 <button
                   onClick={() => setShowNewScheduleForm(false)}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-white p-1"
                 >
-                  <X size={18} />
+                  <X size={18} className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
 
               {formError && (
-                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-warning-900/50 text-warning-400 rounded-md text-xs sm:text-sm">
+                <div className="mb-2 sm:mb-4 p-2 sm:p-3 bg-warning-900/50 text-warning-400 rounded-md text-xs sm:text-sm">
                   {formError}
                 </div>
               )}
 
               {isFormLoading ? (
-                <div className="flex items-center justify-center py-8 sm:py-12">
-                  <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary-500"></div>
+                <div className="flex items-center justify-center py-6 sm:py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary-500"></div>
                 </div>
               ) : (
-                <div className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto flex-1 pr-1 sm:pr-2">
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                       Route
@@ -401,7 +408,7 @@ const ScheduleManagement = () => {
                     <select
                       value={formData.routeId}
                       onChange={(e) => setFormData({ ...formData, routeId: e.target.value })}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 pr-8 sm:pr-10 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 pr-8 sm:pr-10 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none"
                     >
                       <option value="">Select a route</option>
                       {routes.map((route) => (
@@ -419,7 +426,7 @@ const ScheduleManagement = () => {
                     <select
                       value={formData.driverId}
                       onChange={(e) => setFormData({ ...formData, driverId: e.target.value })}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 pr-8 sm:pr-10 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 pr-8 sm:pr-10 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none"
                     >
                       <option value="">Select a driver</option>
                       {drivers.map((driver) => (
@@ -432,6 +439,32 @@ const ScheduleManagement = () => {
 
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                      Departure Bus Station
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.departureBusStation}
+                      onChange={(e) => setFormData({ ...formData, departureBusStation: e.target.value })}
+                      placeholder="Enter departure bus station"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                      Arrival Bus Station
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.arrivalBusStation}
+                      onChange={(e) => setFormData({ ...formData, arrivalBusStation: e.target.value })}
+                      placeholder="Enter arrival bus station"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                       Departure Time
                     </label>
                     <DatePicker
@@ -440,7 +473,7 @@ const ScheduleManagement = () => {
                       showTimeSelect
                       dateFormat="MMMM d, yyyy HH:mm"
                       timeFormat="HH:mm"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholderText="Select departure time"
                       timeIntervals={15}
                       showPopperArrow={false}
@@ -457,7 +490,7 @@ const ScheduleManagement = () => {
                       showTimeSelect
                       dateFormat="MMMM d, yyyy HH:mm"
                       timeFormat="HH:mm"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholderText="Select arrival time"
                       timeIntervals={15}
                       showPopperArrow={false}
@@ -473,23 +506,23 @@ const ScheduleManagement = () => {
                       <button
                         type="button"
                         onClick={addStop}
-                        className="flex items-center gap-1.5 text-primary-400 hover:text-primary-300 text-xs sm:text-sm"
+                        className="flex items-center gap-1 text-primary-400 hover:text-primary-300 text-xs sm:text-sm"
                       >
-                        <Plus size={14} className="sm:w-4 sm:h-4" />
+                        <Plus size={14} className="w-3 h-3 sm:w-4 sm:h-4" />
                         Add Stop
                       </button>
                     </div>
 
                     {formData.stops.map((stop, index) => (
-                      <div key={index} className="space-y-2 p-3 sm:p-4 bg-gray-800/50 rounded-lg">
+                      <div key={index} className="space-y-2 p-2 sm:p-4 bg-gray-800/50 rounded-lg">
                         <div className="flex justify-between items-center">
                           <h3 className="text-xs sm:text-sm font-medium text-gray-400">Stop {index + 1}</h3>
                           <button
                             type="button"
                             onClick={() => removeStop(index)}
-                            className="text-red-400 hover:text-red-300"
+                            className="text-red-400 hover:text-red-300 p-1"
                           >
-                            <X size={14} className="sm:w-4 sm:h-4" />
+                            <X size={14} className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
                         </div>
 
@@ -508,7 +541,7 @@ const ScheduleManagement = () => {
                               dateFormat="HH:mm"
                               timeFormat="HH:mm"
                               placeholderText="Arrival Time"
-                              className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                               timeIntervals={15}
                               required
                             />
@@ -519,7 +552,7 @@ const ScheduleManagement = () => {
                               dateFormat="HH:mm"
                               timeFormat="HH:mm"
                               placeholderText="Departure Time"
-                              className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                               timeIntervals={15}
                               required
                             />
@@ -532,7 +565,7 @@ const ScheduleManagement = () => {
                   <div className="flex justify-end gap-2 sm:gap-3 mt-4 sm:mt-6">
                     <button
                       onClick={() => setShowNewScheduleForm(false)}
-                      className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-400 hover:text-white"
+                      className="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-400 hover:text-white"
                       disabled={isCreating}
                     >
                       Cancel
