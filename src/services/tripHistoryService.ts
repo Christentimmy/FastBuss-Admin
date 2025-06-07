@@ -228,6 +228,7 @@ export const tripHistoryService = {
           'Content-Type': 'application/json',
         },
       });
+      const data = await response.json();
 
       if (authService.handleTokenExpiration(response)) {
         throw new Error('Token expired');
@@ -237,7 +238,6 @@ export const tripHistoryService = {
         throw new Error('Failed to fetch trip details');
       }
 
-      const data = await response.json();
       return data;
     } catch (error) {
       console.error('Error fetching trip details');

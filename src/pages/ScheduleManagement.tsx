@@ -228,7 +228,6 @@ const ScheduleManagement = () => {
 
   const filteredSchedules = schedules.filter(schedule => {
     const matchesSearch = 
-      schedule.busName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       schedule.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       schedule.routeName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || schedule.status === statusFilter;
